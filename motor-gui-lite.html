@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motor Semantico - DEXCOM | Jabil Tijuana</title>
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --navy:    #002C49;
+  --navy-dk: #001a2e;
+  --navy-lt: #003a5c;
+  --blue:    #6098B0;
+  --blue-lt: #7ab1c8;
+  --bg:      #0d1a26;
+  --card:    #132433;
+  --card-hl: #1a2d40;
+  --border:  #1e3a52;
+  --text:    #c8d6e0;
+  --text-muted: #6a8a9a;
+  --font:    'Segoe UI', system-ui, -apple-system, sans-serif;
+  --success: #2ecc71;
+  --warn:    #f39c12;
+  --danger:  #e74c3c;
+}
+html,body{height:100%;}
+body{font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg);display:flex;flex-direction:column;min-height:100vh;}
+.site-header{background:var(--navy);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);position:sticky;top:0;z-index:100;}
+.header-inner{display:flex;align-items:center;gap:16px;padding:10px 28px;max-width:1440px;margin:0 auto;width:100%;}
+.header-titles{flex:1;}
+.header-titles h1{font-size:18px;font-weight:700;letter-spacing:0.02em;line-height:1.2;color:#fff;}
+.header-titles p{font-size:11px;color:var(--blue-lt);margin-top:2px;text-transform:uppercase;letter-spacing:0.04em;}
+.header-line{height:3px;background:linear-gradient(90deg,var(--blue),var(--navy-lt),var(--blue));}
+main{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;padding:1.5rem;max-width:1440px;margin:0 auto;width:100%;flex:1;overflow-y:auto;}
+@media(max-width:1024px){main{grid-template-columns:1fr;}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.3rem;box-shadow:0 2px 12px rgba(0,0,0,0.2);}
+.panel-title{font-size:0.75rem;font-weight:600;color:var(--blue);margin-bottom:0.9rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.5px;}
+.form-group{margin-bottom:1.1rem;}
+label{display:block;font-size:0.72rem;font-weight:500;color:var(--text-muted);margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.3px;}
+select,input,textarea{width:100%;padding:0.6rem 0.8rem;border:1px solid var(--border);border-radius:5px;background:var(--navy-dk);color:var(--text);font-size:0.9rem;font-family:inherit;transition:all 0.15s;}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(96,152,176,0.15);}
+select option{background:var(--navy);color:var(--text);}
+input[readonly]{opacity:0.6;cursor:default;}
+button{width:100%;padding:0.65rem 1.2rem;background:linear-gradient(135deg,var(--blue) 0%,var(--navy-lt) 100%);color:#fff;border:none;border-radius:5px;font-weight:600;cursor:pointer;transition:all 0.2s;font-size:0.88rem;}
+button:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(96,152,176,0.25);}
+button:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.match-item{background:var(--navy-dk);border:1px solid var(--border);border-radius:5px;padding:0.7rem;margin-bottom:0.5rem;cursor:pointer;transition:all 0.15s;}
+.match-item:hover{background:var(--card-hl);border-color:var(--blue);}
+.match-item.selected{background:var(--blue);border-color:var(--blue);}
+.match-code{font-weight:600;color:var(--blue);font-family:monospace;font-size:0.93rem;}
+.match-item.selected .match-code{color:#fff;}
+.match-desc{font-size:0.78rem;color:var(--text-muted);margin-top:0.15rem;}
+.match-item.selected .match-desc{color:#e0e8f0;}
+.match-conf{font-size:0.72rem;margin-top:0.15rem;}
+.match-conf.high{color:var(--success);}
+.match-conf.med{color:var(--warn);}
+.match-conf.low{color:var(--danger);}
+.match-item.selected .match-conf{color:#e0e8f0;}
+.info-box{background:var(--navy-dk);border-radius:5px;padding:1rem;min-height:80px;display:flex;flex-direction:column;justify-content:center;}
+.info-code{font-size:1.4rem;font-weight:600;color:var(--blue);font-family:monospace;}
+.info-desc{color:var(--text-muted);font-size:0.85rem;margin-top:0.3rem;}
+.info-conf{font-size:0.8rem;margin-top:0.3rem;}
+.info-conf.high{color:var(--success);}
+.info-conf.med{color:var(--warn);}
+.info-conf.low{color:var(--danger);}
+.info-placeholder{color:var(--text-muted);font-size:0.85rem;text-align:center;}
+.hist-item{background:var(--navy-dk);border-left:3px solid var(--blue);padding:0.55rem 0.7rem;margin-bottom:0.45rem;border-radius:2px;font-size:0.85rem;}
+.hist-code{font-weight:600;color:var(--blue);font-family:monospace;font-size:0.9rem;}
+.hist-text{color:var(--text-muted);font-size:0.78rem;margin-top:0.1rem;}
+.hist-meta{color:var(--text-muted);font-size:0.68rem;margin-top:0.1rem;opacity:0.7;}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
+.stat-box{background:var(--navy-dk);padding:0.8rem;border-radius:5px;text-align:center;}
+.stat-val{font-size:1.8rem;font-weight:600;color:var(--blue);}
+.stat-label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-top:0.15rem;}
+footer{text-align:center;padding:0.7rem 2rem;font-size:0.7rem;color:var(--text-muted);border-top:1px solid var(--border);opacity:0.7;}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-titles">
+      <h1>Motor Semantico DEXCOM</h1>
+      <p>Normalizacion de codigos de falla | Jabil Tijuana</p>
+    </div>
+    <div class="header-titles" style="text-align:right;">
+      <p>Cliente</p>
+      <h1 style="font-size:14px;">DEXCOM</h1>
+    </div>
+  </div>
+</header>
+<div class="header-line"></div>
+
+<main>
+  <div class="panel">
+    <div class="panel-title">Filtros</div>
+
+    <div class="form-group">
+      <label>Linea</label>
+      <select id="selLinea" onchange="onLineaChange()">
+        <option value="">-- Selecciona Linea --</option>
+        <option value="TSA">TSA</option>
+        <option value="DSD05">DSD05</option>
+        <option value="Fast Line">Fast Line</option>
+      </select>
+    </div>
+
+    <div class="panel-title" style="margin-top:1.5rem;">Descripcion del Error</div>
+
+    <div class="form-group">
+      <label>Describe lo que observaste</label>
+      <textarea id="txtDesc" rows="3" placeholder="Ej: atoramiento canula, elevador falla, conveyor parado" oninput="onDescChange()"></textarea>
+    </div>
+
+    <div class="panel-title" style="margin-top:1.5rem;">Sugerencias</div>
+    <div id="sugerencias" style="min-height:70px;"></div>
+
+    <button onclick="guardar()" style="margin-top:1rem;" id="btnGuardar" disabled>Guardar</button>
+  </div>
+
+  <div>
+    <div class="panel">
+      <div class="panel-title">Codigo Seleccionado</div>
+      <div id="infoBox" class="info-placeholder" style="padding:1.5rem;">Selecciona una sugerencia</div>
+    </div>
+
+    <div class="panel" style="margin-top:1rem;">
+      <div class="panel-title">Estadisticas</div>
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-val" id="statCount">0</div>
+          <div class="stat-label">Capturas</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statAvg">--</div>
+          <div class="stat-label">Confianza</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:1rem;">
+      <div class="panel-title">Historial</div>
+      <div id="historial" style="max-height:280px;overflow-y:auto;">
+        <div class="info-placeholder" style="padding:1rem;">Sin capturas</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>Motor Semantico DEXCOM · Logica SQL lista para integracion con Power Apps · Jabil 2026</footer>
+
+<script>
+var historial = [];
+var seleccion = null;
+
+const LINEAS = {
+  'TSA': [
+    { cod:'AX1 LIF', desc:'AX1 Falla por elevador' },
+    { cod:'AX1 CON', desc:'AX1 Falla por conveyor' },
+    { cod:'AX1 ATM', desc:'AX1 Atoramiento en transferencia de magneto' },
+    { cod:'AX1 EM', desc:'AX1 Ensamble de magneto' },
+    { cod:'AX1 CMAG', desc:'AX1 Falla en carga de magneto (Invertido)' },
+    { cod:'AX1 BF SP', desc:'AX1 Falla por Bowl Feeder (Stripper Plate)' },
+    { cod:'AX1 IF SP', desc:'AX1 Falla por Inline Feeder (Stripper Plate)' },
+    { cod:'AX1 PAC', desc:'AX1 Pallets Atorados en conveyors (piezas atoradas)' },
+    { cod:'AX1 RBLD30', desc:'AX1 Falla en Robot Carga (recoleccion de pieza de SP St 30)' },
+    { cod:'AX1 RBULD40', desc:'AX1 Falla en Robot Descarga (recoleccion de pieza de SP St 40)' },
+    { cod:'AX1 L&L', desc:'AX1 Ensamble de SP (Lift Located)' },
+    { cod:'AX1 PAB', desc:'AX1 Presion Aire Baja' },
+    { cod:'AX1 SE', desc:'AX1 Suministro Electrico' },
+    { cod:'AX1 AMAT', desc:'AX1 Atoramiento bin de material' },
+    { cod:'AX2 CON', desc:'AX2 Falla por conveyor' },
+    { cod:'AX2 BF NC', desc:'AX2 Falla por Bowl Feeder (Needle Carriage)' },
+    { cod:'AX2 IF NC', desc:'AX2 Falla por Inline Feeder (Needle Carriage)' },
+    { cod:'AX2 PAC', desc:'AX2 Pallets Atorados (Conveyor)' },
+    { cod:'AX2 RBT', desc:'AX2 Ensamble de NC (Robot)' },
+    { cod:'AX2 RBT MAT', desc:'AX2 Ensamble de NC (Material) Orientacion' },
+    { cod:'AX2 RBT RP', desc:'AX2 Colision Robot Pick (recoleccion de pieza en nido)' },
+    { cod:'AX2 RBT L&L', desc:'AX2 Ensamble de NC (Lift Located)' },
+    { cod:'AX2 RBT EOAT', desc:'AX2 Ensamble de NC (Tooling)  Herramienta del robot' },
+    { cod:'AX2 RBT SR', desc:'AX2 Ensamble de NC (Sensor Robot) Herramienta del robot' },
+    { cod:'AX2 RBT CAL', desc:'AX2 Ensamble de NC (Calibracion Robot)' },
+    { cod:'AX2 SS', desc:'AX2 Falla en Sensor Spring' },
+    { cod:'AX2 PAL', desc:'AX2 Falla en Sensor Pallet' },
+    { cod:'AX2 PZ', desc:'AX2 Falla en Sensor Pieza' },
+    { cod:'AX2 SLD', desc:'AX2 Falla en Sliders' },
+    { cod:'AX2 SEG', desc:'AX2 Falla en guarda de seguridad' },
+    { cod:'AX2 RFT', desc:'AX2 Falla prueba RFT' },
+    { cod:'AX2 SE', desc:'AX2 Suministro Electrico' },
+    { cod:'AX2 PAB', desc:'AX2 Presion Aire Baja' },
+    { cod:'AX3 LIF', desc:'AX3 Falla Elevador' },
+    { cod:'AX3 CON', desc:'AX3 Falla por conveyor' },
+    { cod:'AX3 BF IH', desc:'AX3 Falla por Bowl Feeder (Inner Housing)' },
+    { cod:'AX3 IF IH', desc:'AX3 Falla por Inline Feeder (Inner Housing)' },
+    { cod:'AX3 PAC', desc:'AX3 Pallets atorados (Conveyor)' },
+    { cod:'AX3 RBT', desc:'AX3 Ensamble de IH (Robot)' },
+    { cod:'AX3 RBT MAT', desc:'AX3 Ensamble de IH (Material)' },
+    { cod:'AX3 RBT RP', desc:'AX3 Colision Robot Pick' },
+    { cod:'AX3 RBT L&L', desc:'AX3 Ensamble de IH (Lift Located)' },
+    { cod:'AX3 RBT EOAT', desc:'AX3 Ensamble de IH (Tooling)' },
+    { cod:'AX3 RBT SR', desc:'AX3 Ensamble de IH (Sensor Robot)' },
+    { cod:'AX3 RBT CAL', desc:'AX3 Ensamble de IH (Calibracion Robot)' },
+    { cod:'AX3 SS', desc:'AX3 Falla en Sensor Spring' },
+    { cod:'AX3 PAL', desc:'AX3 Falla en Sensor Pallet' },
+    { cod:'AX3 PZ', desc:'AX3 Falla en Sensor Pieza' },
+    { cod:'AX3 SLD', desc:'AX3 Falla en Sliders' },
+    { cod:'AX3 SEG', desc:'AX3 Falla en guarda de seguridad' },
+    { cod:'AX3 UD', desc:'AX3 Servo de Descarga' },
+    { cod:'AX3 SV', desc:'AX3 Sistema de Vision' },
+    { cod:'AX3 SE', desc:'AX3 Suministro electrico' },
+    { cod:'AX3 PAB', desc:'AX3 Presion Baja' },
+    { cod:'BIC CON', desc:'BIC Falla de Conveyor' },
+    { cod:'BIC RBT', desc:'BIC Falla de Robot' },
+    { cod:'BIC SV', desc:'BIC Sistema de vision (Scrap)' },
+    { cod:'BIC ACMAT', desc:'BIC Conveyor detenido acumulamiento de material' },
+    { cod:'BIC LIF', desc:'BIC Elevador de Charolas' },
+    { cod:'SUT UP', desc:'Toma de parametros' },
+    { cod:'GFSE', desc:'Falta del Suministro Electrico' },
+    { cod:'GFAC', desc:'Falta del Aire comprimido' },
+    { cod:'RAMUP', desc:'Personal en entrenamiento' },
+    { cod:'QCSAMPLES', desc:'Pruebas de Calidad' },
+    { cod:'QCCAL', desc:'Calibracion' },
+    { cod:'LIMPMAQ', desc:'Limpieza de maquina (retiro de scrap, FIFO reset)' },
+    { cod:'FMAT', desc:'Falta de material' },
+    { cod:'MATTO PREV', desc:'Mantenimiento Preventivo' },
+    { cod:'PERIFERICO', desc:'Perifericos' },
+    { cod:'PLAN-PROD', desc:'Acomodo / distribucion de Personal' },
+    { cod:'MAT REP', desc:'Problemas con materiales (cambios)' },
+    { cod:'ENGTEST', desc:'Pruebas de Ingenieria' },
+    { cod:'COMM', desc:'Juntas Comunicacion' }
+  ],
+  'DSD05': [
+    { cod:'M1 St01', desc:'Cell 1 Check Empty Pallet St01' },
+    { cod:'M1 St02', desc:'St02 Falla por transferencia de Canula Hub' },
+    { cod:'M1 St03', desc:'Cell 1  Check Cannula Hubs St03' },
+    { cod:'M1 St04', desc:'St04 Falla por Transferencia de Inner Hub' },
+    { cod:'M1 St05', desc:'Cell 1 Check Inner Hub  St05' },
+    { cod:'M1 St06', desc:'St06 Falla por Transferencia de Outer Hub' },
+    { cod:'M1 St07', desc:'Cell 1 Check Outer Hub St08' },
+    { cod:'M2 St04', desc:'St04 Falla por transferencia de canula' },
+    { cod:'M2 St05', desc:'Cell 2 Set Cannula St05' },
+    { cod:'M2 St06', desc:'Cell 2 Check Cannula St06' },
+    { cod:'M2 St07', desc:'St07 Falla por transferencia de Aguja' },
+    { cod:'M2 St08', desc:'St08 Fallas Altura de Aguja' },
+    { cod:'M2 St09', desc:'St09 Fallas por dispensado Dymax' },
+    { cod:'M2 St10', desc:'Cell 2 UV Cure St10' },
+    { cod:'M2 St11', desc:'Cell 2 UV Cure  St11' },
+    { cod:'M2 St12', desc:'Cell 2 UV Cure  St12' },
+    { cod:'M2 St13', desc:'St13 Fallas por Push Test' },
+    { cod:'M2 St14', desc:'St14 Falla por Vision Check Cannula y Aguja' },
+    { cod:'M2 St15', desc:'Cell 2 Vision Check Needle Tip St15' },
+    { cod:'M2 St16', desc:'St16 Fallas por cargado de Booster' },
+    { cod:'M2 St17', desc:'Cell 3 Offload Inner Hub St17' },
+    { cod:'M3 St02', desc:'St02 Fallas por ensamble de Inner Hub' },
+    { cod:'M3 St03', desc:'Cell 3 Check Inner Hub St03' },
+    { cod:'M3 St04', desc:'Cell 3 Check Presence St04' },
+    { cod:'M3 St05', desc:'Cell 3 Offload Outer Hub  St05' },
+    { cod:'M3 St06', desc:'Cell 3 Check Outer Hub St06' },
+    { cod:'M3 St07', desc:'Cell 3 Transfer S/A St07' },
+    { cod:'M3 St08', desc:'St08 Fallas por Ensamble Canula / Aguja' },
+    { cod:'M3 St09', desc:'St09 Falla por deteccion por male ensamble' },
+    { cod:'M3 St10', desc:'St08 Fallas por PolyFeed' },
+    { cod:'M3 St11', desc:'Cell 3 Press Puck  St11' },
+    { cod:'M3 St12', desc:'Cell 3 Check Pallet Position  St12' },
+    { cod:'M3 St13', desc:'Cell 3 Vision Check Puck   St13' },
+    { cod:'M3 St15', desc:'Cell 3 Transfer Hub S/A  St15' },
+    { cod:'M3 St16', desc:'Cell 3  Check Hub S/A St16' },
+    { cod:'M4 St02', desc:'St02 Fallas por CheckOcclusion' },
+    { cod:'M4 St05', desc:'St05 Fallas por CheckOcclusion' },
+    { cod:'M4 St07', desc:'St07 Falla por Dispensado de PJ' },
+    { cod:'M4 St08', desc:'St08 Falla por Dispensado de PJ' },
+    { cod:'M4 St09', desc:'St09 Falla por Sistema de Vision' },
+    { cod:'M4 St10', desc:'St10 Falla por Sistema de Vision' },
+    { cod:'M4 St11', desc:'St11 Falla por Transferencia de Archer' },
+    { cod:'M4 St12', desc:'St12 Falla por Transferencia de Archer' },
+    { cod:'M4 St13', desc:'St13 Falla por Transferencia de Scrap' },
+    { cod:'M4 St14', desc:'St14 Falla por Transferencia de Scrap' },
+    { cod:'M4 St15', desc:'St15 Falla por Transferencia de Archer' },
+    { cod:'M4 St16', desc:'St16 Falla por Transferencia de Archer' },
+    { cod:'M5 St01', desc:'Cell 5 Check DH and CB St1' },
+    { cod:'M5 St02', desc:'St02 Falla por Transferencia de Archer' },
+    { cod:'M5 St03', desc:'Cell 5 Check hub S/A St3' },
+    { cod:'M5 St04', desc:'Cell 5 Press Hub S/A St4' },
+    { cod:'M5 St05', desc:'St05 Falla por Sistema de Vision' },
+    { cod:'M5 St06', desc:'Cell 5 Check Keel Height St6' },
+    { cod:'M5 St07', desc:'St07 Falla por Transferencia de Scrap' },
+    { cod:'M5 St08', desc:'St08 Falla por Transferencia de Scrap' },
+    { cod:'M6 St01', desc:'Cell 6 Check Empty St1' },
+    { cod:'M6 St02', desc:'Cell 6 Check Empty St2' },
+    { cod:'M6 St03', desc:'St03 Fallas por Carga de Housing' },
+    { cod:'M6 St04', desc:'St04 Fallas por sellado' },
+    { cod:'M6 St05', desc:'St05 Fallas por transferencia de Parche' },
+    { cod:'M6 St06', desc:'St06 Fallas por Sistema de Vision' },
+    { cod:'M6 St07', desc:'St07 Fallas por Sistema de Vision' },
+    { cod:'M6 St11', desc:'St11 Fallas por transferencia de Parche' },
+    { cod:'M6 St12', desc:'St12 Fallas por transferencia de Parche' },
+    { cod:'M6 St15', desc:'Cell 6 Check Present / QC Offload St15' },
+    { cod:'M6 St16', desc:'Cell 6 Check Present / QC Offload St16' },
+    { cod:'1LTH', desc:'Load Tray Handler' },
+    { cod:'2UTH', desc:'Unload Tray Handler' },
+    { cod:'LOCN', desc:'Carga de Canula' },
+    { cod:'LOAG', desc:'Carga de Aguja' },
+    { cod:'LOPJ', desc:'Carga de Petrolato' },
+    { cod:'LODYX', desc:'Carga de Dymax' },
+    { cod:'LOROL', desc:'Carga de Rollo de Parche M6 St04' },
+    { cod:'DHR', desc:'Despeje de linea' },
+    { cod:'QCSELL', desc:'Pruebas de Sellado' },
+    { cod:'QCPNG', desc:'Pruebas de Pin Gauge' },
+    { cod:'GFSE', desc:'Falta del suministro electrico' },
+    { cod:'GFAC', desc:'Falta de Aire Comprimido' },
+    { cod:'MATTO PREV', desc:'Mantenimiento Preventivo' },
+    { cod:'PERIFERICO', desc:'Perifericos' },
+    { cod:'PLAN-PROD', desc:'Acomodo / distribucion de Personal' },
+    { cod:'ENGTEST', desc:'Pruebas de Ingenieria' },
+    { cod:'COMM', desc:'Juntas / Comunicacion' },
+    { cod:'QCCAL', desc:'Calibraciones' },
+    { cod:'MAT REP', desc:'Problemas con materiales (cambios)' },
+    { cod:'FMAT', desc:'Falta de Material' }
+  ],
+  'Fast Line': [
+    { cod:'FL AX1 LIF', desc:'AX1 Falla por elevador' },
+    { cod:'FL AX1 CON', desc:'AX1 Falla por conveyor' },
+    { cod:'FL AX1 BF SP', desc:'AX1 Falla por Bowl Feeder (Stripper Plate)' },
+    { cod:'FL AX1 IF SP', desc:'AX1 Falla por Inline Feeder (Stripper Plate)' },
+    { cod:'FL AX1 BF S', desc:'AX1 Falla por Bowl Feeder (Spring/Resorte)' },
+    { cod:'FL AX1 PAC', desc:'AX1 Pallets Atorados en conveyors (piezas atoradas)' },
+    { cod:'FL AX1 BCODE', desc:'AX1 Falla en lectura de Pallet  Bar Code (codigo de barras)' },
+    { cod:'FL AX1 CLRBPICK', desc:'AX1 Colision Robot Pick (recoleccion de pieza en nido SP)' },
+    { cod:'FL AX1 RBT SP', desc:'AX1 Ensamble de SP (Robot Stripper Plate)' },
+    { cod:'FL AX1 RBT S', desc:'AX1 Ensamble de SP(Robot Spring)' },
+    { cod:'FL AX1 L&L', desc:'AX1 Ensamble de SP (Lift Located)' },
+    { cod:'FL AX1 EOAT', desc:'AX1 Ensamble de SP (Tooling)  Herramienta del robot' },
+    { cod:'FL AX1 SREOAT', desc:'AX1 Ensamble de SP (Sensor Robot) Herramienta del robot' },
+    { cod:'FL AX1 CAL', desc:'AX1 Ensamble de SP (Calibracion Robot)' },
+    { cod:'FL AX1 SS', desc:'AX1 Falla en Sensor Spring' },
+    { cod:'FL AX1 PAL', desc:'AX1 Falla en Sensor Pallet' },
+    { cod:'FL AX1 PZ', desc:'AX1 Falla en Sensor Pieza' },
+    { cod:'FL AX1 SLD', desc:'AX1 Falla en Slider' },
+    { cod:'FL AX1 SV', desc:'AX1 Falla en sistema de Vision' },
+    { cod:'FL AX1 SEG', desc:'AX1 Falla en guarda de seguridad' },
+    { cod:'FL AX1 SE', desc:'AX1 Suministro Electrico' },
+    { cod:'FL AX1 PAB', desc:'AX1 Presion Aire Baja' },
+    { cod:'FL AX2 CON', desc:'AX2 Falla por conveyor' },
+    { cod:'FL AX2 BF NC', desc:'AX2 Falla por Bowl Feeder (Needle Carriage)' },
+    { cod:'FL AX2 IF NC', desc:'AX2 Falla por Inline Feeder (Needle Carriage)' },
+    { cod:'FL AX2 PAC', desc:'AX2 Pallets Atorados en conveyors (piezas atoradas)' },
+    { cod:'FL AX2 BCODE', desc:'AX2 Falla en lectura de Pallet  Bar Code (codigo de barras)' },
+    { cod:'FL AX2 RP', desc:'AX2 Colision Robot Pick (recoleccion de pieza en nido)' },
+    { cod:'FL AX2 RBT NC', desc:'AX2 Ensamble de NC (Robot Needle Carriage)' },
+    { cod:'FL AX2 MAT NC', desc:'AX2 Ensamble de NC (Material)' },
+    { cod:'FL AX2 L&L', desc:'AX2 Ensamble de NC (Lift Located)' },
+    { cod:'FL AX2 EOAT', desc:'AX2 Ensamble de NC (Tooling)  Herramienta del robot' },
+    { cod:'FL AX2 SR', desc:'AX2 Ensamble de NC (Sensor Robot) Herramienta del robot' },
+    { cod:'FL AX2 CAL', desc:'AX2 Ensamble de NC (Calibracion Robot)' },
+    { cod:'FL AX2 SS', desc:'AX2 Falla en Sensor Spring' },
+    { cod:'FL AX2 PAL', desc:'AX2 Falla en Sensor Pallet' },
+    { cod:'FL AX2 PZ', desc:'AX2 Falla en Sensor Pieza' },
+    { cod:'FL AX2 SLD', desc:'AX2 Falla en Slider' },
+    { cod:'FL AX2 SV', desc:'AX2 Falla en sistema de Vision' },
+    { cod:'FL AX2 SEG', desc:'AX2 Falla en guarda de seguridad' },
+    { cod:'FL AX2 RFT', desc:'AX2 Falla prueba RFT' },
+    { cod:'FL AX2 SE', desc:'AX2 Suministro Electrico' },
+    { cod:'FL AX2 PAB', desc:'AX2 Presion Aire Baja' },
+    { cod:'FL AX3 CON', desc:'AX3 Falla por conveyor' },
+    { cod:'FL AX3 BF IH', desc:'AX3 Falla por Bowl Feeder (Inner Housing)' },
+    { cod:'FL AX3 IF IH', desc:'AX3 Falla por Inline Feeder (Inner Housing)' },
+    { cod:'FL AX3 BF S', desc:'AX3 Falla por Carga de Resorte (Resorte/Spring)' },
+    { cod:'FL AX3 PAC', desc:'AX3 Pallets Atorados en conveyors (piezas atoradas)' },
+    { cod:'FL AX3 BCODE', desc:'AX3 Falla en lectura de Pallet  Bar Code (codigo de barras)' },
+    { cod:'FL AX3 RP IH', desc:'AX3 Colision Robot Pick (Inner Housing)' },
+    { cod:'FL AX3 RBT IH', desc:'AX3 Ensamble de IH (Robot Inner Housing)' },
+    { cod:'FL AX3 RBT S', desc:'AX3 Ensamble de IH (Spring)' },
+    { cod:'FL AX3 CAL', desc:'AX3 Ensamble de IH (Calibracion Robot)' },
+    { cod:'FL AX3 L&L', desc:'AX3 Ensamble de IH (Lift Located)' },
+    { cod:'FL AX3 EOAT', desc:'AX3 Ensamble de IH (Tooling)' },
+    { cod:'FL AX3 SR', desc:'AX3 Ensamble de IH (Sensor Robot)' },
+    { cod:'FL AX3 SS', desc:'AX3 Falla en Sensor Spring' },
+    { cod:'FL AX3 PAL', desc:'AX3 Falla en Sensor Pallet' },
+    { cod:'FL AX3 PZ', desc:'AX3 Falla en Sensor Pieza' },
+    { cod:'FL AX3 SLD', desc:'AX3 Falla en Slider' },
+    { cod:'FL AX3 SV', desc:'AX3 Falla en sistema de Vision' },
+    { cod:'FL AX3 SEG', desc:'AX3 Falla en guarda de seguridad' },
+    { cod:'FL AX3 SE', desc:'AX3 Suministro electrico' },
+    { cod:'FL AX3 PAB', desc:'AX3 Presion Aire Baja' },
+    { cod:'FL AX4 CON', desc:'AX4 Falla de Conveyor' },
+    { cod:'FL AX4 RBT', desc:'AX4 Falla de Robot' },
+    { cod:'FL AX4 SV', desc:'AX4 Sistema de vision (Scrap)' },
+    { cod:'FL AX4 PAC', desc:'AX4 Pallets Atorados en conveyors (piezas atoradas)' },
+    { cod:'FL AX4 BCODE', desc:'AX4 Falla en lectura de Pallet  Bar Code (codigo de barras)' },
+    { cod:'FL AX4 EC', desc:'AX4 Elevador de Charolas' },
+    { cod:'FL AX4 LIF', desc:'AX4 Falla Elevador de salida' },
+    { cod:'FL AX4 SE', desc:'AX4 Suministro Electrico' },
+    { cod:'FL AX4 PAB', desc:'AX4 Presion Aire Baja' },
+    { cod:'SUT UP', desc:'Toma de parametros' },
+    { cod:'FSER', desc:'Falla en servidor' },
+    { cod:'GFSE', desc:'Falta del Suministro Electrico' },
+    { cod:'GFAC', desc:'Falta del Aire comprimido' },
+    { cod:'RAMUP', desc:'Personal en entrenamiento' },
+    { cod:'QCSAMPLES', desc:'Pruebas de Calidad' },
+    { cod:'QCCAL', desc:'Calibracion' },
+    { cod:'FMAT', desc:'Falta de material' },
+    { cod:'MATTO PREV', desc:'Mantenimiento Preventivo' },
+    { cod:'PERIFERICO', desc:'Perifericos' },
+    { cod:'PLAN-PROD', desc:'Acomodo / distribucion de Personal' },
+    { cod:'MAT REP', desc:'Problemas con materiales (cambios)' },
+    { cod:'ENGTEST', desc:'Pruebas de Ingenieria' },
+    { cod:'COMM', desc:'Juntas Comunicacion' }
+  ],
+};
+
+const EQS = {
+  'AX1 LIF':['elevador falla','elevador no sube','elevador atascado','falla elevador'],
+  'AX1 CON':['conveyor parado','motor conveyor','banda detenida','conveyor no gira'],
+  'AX1 ATM':['atoramiento transferencia','transferencia magneto','atorado en transfer'],
+  'AX1 BF SP':['bowlfeeder falla','bowl feeder stripper','bf stripper'],
+  'AX1 IF SP':['inline feeder','inline falla','if stripper'],
+  'AX1 PAC':['pallet atorado','pallet atascado','atoramiento pallet conveyor'],
+  'AX1 RBLD30':['robot carga','robot recoleccion','falla robot carga'],
+  'AX1 RBULD40':['robot descarga','falla robot descarga','robot recoleccion descarga'],
+  'AX1 L&L':['lift located','ensamble lift','lift locator falla'],
+  'AX1 PAB':['presion aire baja','aire comprimido','presion baja'],
+  'AX1 SE':['suministro electrico','falla electrica','sin electricidad'],
+  'AX2 CON':['ax2 conveyor','ax2 banda','conveyor ax2 parado'],
+  'AX2 BF NC':['ax2 bowlfeeder','bowl needle carriage','ax2 bf'],
+  'AX2 IF NC':['ax2 inline feeder','inline needle carriage','ax2 if'],
+  'AX2 SS':['sensor spring ax2','falla sensor spring','resorte sensor'],
+  'AX2 PAL':['sensor pallet ax2','falla sensor pallet','pallet sensor'],
+  'AX2 PZ':['sensor pieza ax2','falla sensor pieza','pieza sensor'],
+  'AX3 LIF':['ax3 elevador','ax3 lif falla','elevador ax3'],
+  'AX3 SS':['sensor spring ax3','falla sensor spring ax3','spring sensor ax3'],
+  'AX3 PAL':['sensor pallet ax3','falla pallet ax3','ax3 pallet sensor'],
+  'AX3 PZ':['sensor pieza ax3','falla pieza ax3','ax3 pieza sensor'],
+  'BIC CON':['bic conveyor','conveyor bic','bic banda'],
+  'BIC RBT':['bic robot','falla robot bic','robot bic'],
+  'M1 St02':['atoramiento canula','canula atascada','bowlfeder alarma','canula hub falla','falla canula hub'],
+  'M1 St04':['atoramiento inner','inner hub atascado','inner hub falla'],
+  'M1 St07':['atoramiento outer','outer hub atascado','outer hub falla'],
+  'M2 St04':['falla transferencia canula','canula transferencia','m2 canula falla'],
+  'M2 St07':['falla needle','needle transferencia','aguja falla','transferencia aguja'],
+  'M2 St08':['altura aguja','falla altura aguja','aguja altura'],
+  'M2 St09':['falla dymax','dispensado dymax','dymax error'],
+  'M2 St10':['curado dymax','falla curado','dymax curado'],
+  'M2 St15':['vision needle','needle tip','vision check needle'],
+  'M3 St02':['m3 canula','cell3 canula falla','canula transfer m3'],
+  'M3 St08':['ensamble canula aguja','canula aguja falla'],
+  'M3 St13':['vision puck','check puck','puck vision'],
+  'M4 St09':['vision m4','sistema vision m4','falla vision m4'],
+  'M4 St10':['vision m4 st10','sistema vision','falla vision'],
+  'M5 St05':['vision m5','sistema vision m5','falla vision m5'],
+  'M6 St06':['vision m6','sistema vision m6','falla vision'],
+  'M6 St07':['vision m6 st07','sistema vision m6'],
+  'M6 St04':['falla sellado','sellado parche','parche sellado'],
+  '1LTH':['load tray','tray handler entrada','carga charola'],
+  '2UTH':['unload tray','tray handler salida','descarga charola'],
+  'LOCN':['carga canula','cargar canula','suministro canula'],
+  'LOAG':['carga aguja','cargar aguja','suministro aguja'],
+  'LOPJ':['carga petrolato','petrolato','cargar petrolato'],
+  'DHR':['despeje linea','limpieza linea','linea despejada'],
+  'GFSE':['falta electricidad','sin luz','suministro electrico','no hay electricidad'],
+  'GFAC':['falta aire','sin aire','aire comprimido','no hay aire'],
+  'FMAT':['falta material','sin material','material insuficiente'],
+  'FL AX1 LIF':['fl elevador falla','fastline elevador','fl elevador no sube'],
+  'FL AX1 CON':['fl conveyor parado','fastline conveyor','fl banda detenida'],
+  'FL AX1 BF SP':['fl bowlfeeder','fastline bowl feeder','fl bf stripper'],
+  'FL AX1 SS':['fl sensor spring','sensor spring fl','fl spring sensor'],
+  'FL AX1 PAL':['fl sensor pallet','pallet sensor fl','fl pallet'],
+  'FL AX1 PZ':['fl sensor pieza','pieza sensor fl','fl pieza sensor'],
+  'FL AX1 SREOAT':['fl sensor robot','sensor robot fl','fl srobot'],
+  'FL AX1 SV':['fl sistema vision','vision fl','fl falla vision'],
+  'FL AX1 BCODE':['fl barcode','codigo barras fl','fl bar code'],
+  'FL AX1 SLD':['fl slider','slider falla fl','fl deslizador'],
+  'FL AX1 SEG':['fl guarda seguridad','guarda fl','fl safety'],
+  'FL AX1 PAB':['fl presion aire','aire fl','fl presion baja'],
+  'FL AX2 CON':['fl ax2 conveyor','ax2 conveyor fl','fl ax2 banda'],
+  'FL AX2 SS':['fl ax2 sensor spring','ax2 spring sensor fl','fl ax2 spring'],
+  'FL AX2 PAL':['fl ax2 sensor pallet','ax2 pallet fl','fl ax2 pallet'],
+  'FL AX2 SV':['fl ax2 vision','ax2 vision fl','fl ax2 sistema vision'],
+  'FL AX3 CON':['fl ax3 conveyor','ax3 conveyor fl','fl ax3 banda'],
+  'FL AX3 SS':['fl ax3 sensor spring','ax3 spring fl','fl ax3 spring'],
+  'FL AX3 PAL':['fl ax3 sensor pallet','ax3 pallet fl','fl ax3 pallet'],
+  'FL AX3 SV':['fl ax3 vision','ax3 vision fl','fl ax3 sistema vision'],
+  'FL AX4 CON':['fl ax4 conveyor','ax4 conveyor fl','fl ax4 banda'],
+  'FL AX4 RBT':['fl ax4 robot','ax4 robot fl','fl ax4 robot falla'],
+  'FL AX4 SV':['fl ax4 vision','ax4 scrap vision','fl ax4 sistema vision'],
+  'FL AX4 EC':['fl elevador charolas','charolas fl','fl ec'],
+  'FL AX4 LIF':['fl ax4 elevador','ax4 lif fl','fl ax4 salida'],
+  'SUT UP':['toma parametros','parametros','setup'],
+  'QCSAMPLES':['pruebas calidad','quality control','muestras calidad'],
+  'QCCAL':['calibracion','calibrar','cal'],
+  'MATTO PREV':['mantenimiento','mantenimiento preventivo','mtto preventivo'],
+  'PERIFERICO':['periferico','equipo periferico','periferico falla'],
+  'PLAN-PROD':['acomodo personal','distribucion personal','cambio personal'],
+  'MAT REP':['problema material','material defectuoso','cambio material'],
+  'ENGTEST':['pruebas ingenieria','ingenieria pruebas','test ingenieria'],
+  'COMM':['juntas','comunicacion','reunion','junta personal'],
+
+  // TSA — AX2/AX3 SEG y bloques robot
+  'AX2 SEG':['guarda seguridad ax2','seguridad ax2','guarda ax2','ax2 safety'],
+  'AX3 SEG':['guarda seguridad ax3','seguridad ax3','guarda ax3','ax3 safety'],
+  'AX2 SE':['suministro electrico ax2','electrico ax2','ax2 sin luz'],
+  'AX3 SE':['suministro electrico ax3','electrico ax3','ax3 sin luz'],
+  'AX2 SLD':['slider ax2','deslizador ax2','ax2 slider'],
+  'AX3 SLD':['slider ax3','deslizador ax3','ax3 slider'],
+  'AX2 RBT':['robot ax2','falla robot ax2','ax2 robot ensamble'],
+  'AX2 RBT MAT':['material robot ax2','orientacion ax2','ax2 material'],
+  'AX2 RBT RP':['colision robot ax2','pick ax2','ax2 robot pick'],
+  'AX2 RBT L&L':['lift located ax2','ax2 lift','ax2 lift located'],
+  'AX2 RBT EOAT':['tooling ax2','herramienta robot ax2','ax2 eoat'],
+  'AX2 RBT SR':['sensor robot ax2','ax2 sensor robot','ax2 sr'],
+  'AX2 RBT CAL':['calibracion robot ax2','ax2 calibracion','ax2 cal'],
+  'AX3 RBT':['robot ax3','falla robot ax3','ax3 robot ensamble'],
+  'AX3 RBT MAT':['material robot ax3','ax3 material'],
+  'AX3 RBT RP':['colision robot ax3','pick ax3','ax3 robot pick'],
+  'AX3 RBT L&L':['lift located ax3','ax3 lift','ax3 lift located'],
+  'AX3 RBT EOAT':['tooling ax3','herramienta robot ax3','ax3 eoat'],
+  'AX3 RBT SR':['sensor robot ax3','ax3 sensor robot','ax3 sr'],
+  'AX3 RBT CAL':['calibracion robot ax3','ax3 calibracion','ax3 cal'],
+  'AX3 CON':['conveyor ax3','banda ax3','ax3 conveyor'],
+  'AX3 BF IH':['bowlfeeder ax3','bowl ax3 inner','ax3 bf'],
+  'AX3 IF IH':['inline feeder ax3','ax3 inline','ax3 if'],
+  'AX3 PAC':['pallets ax3','pallet atorado ax3','ax3 pallet'],
+  'AX3 UD':['servo descarga','ax3 servo','descarga ax3'],
+  'AX2 RFT':['prueba rft','rft falla','ax2 rft'],
+  'AX2 PAC':['pallets ax2','pallet atorado ax2','ax2 pallet'],
+  'AX1 EM':['ensamble magneto','magneto ensamble','ax1 magneto'],
+  'AX1 CMAG':['carga magneto','magneto invertido','carga magneto error'],
+  'AX1 AMAT':['atoramiento bin','bin material','material bin'],
+  'BIC SV':['vision bic','bic scrap','sistema vision bic'],
+  'BIC ACMAT':['acumulamiento bic','bic material acumulado','bic conveyor material'],
+  'BIC LIF':['elevador charolas bic','charolas bic','bic lif'],
+  'RAMUP':['entrenamiento personal','personal entrenamiento','ramup'],
+  'LIMPMAQ':['limpieza maquina','limpiar maquina','fifo reset'],
+  // Fast Line — SE y EOAT
+  'FL AX1 SE':['fl suministro electrico','fl ax1 electrico','ax1 sin luz fl'],
+  'FL AX2 SE':['fl ax2 suministro electrico','fl ax2 electrico','ax2 sin luz fl'],
+  'FL AX3 SE':['fl ax3 suministro electrico','fl ax3 electrico','ax3 sin luz fl'],
+  'FL AX1 EOAT':['fl tooling ax1','fl herramienta ax1','ax1 eoat fl'],
+  'FL AX2 EOAT':['fl tooling ax2','fl herramienta ax2','ax2 eoat fl'],
+  'FL AX3 EOAT':['fl tooling ax3','fl herramienta ax3','ax3 eoat fl'],
+  'FL AX1 L&L':['fl lift located ax1','ax1 lift fl','fl ax1 lift'],
+  'FL AX2 L&L':['fl lift located ax2','ax2 lift fl','fl ax2 lift'],
+  'FL AX3 L&L':['fl lift located ax3','ax3 lift fl','fl ax3 lift'],
+  'FL AX2 PAC':['fl pallets ax2','ax2 pallet fl','fl ax2 pallet atorado'],
+  'FL AX3 PAC':['fl pallets ax3','ax3 pallet fl','fl ax3 pallet atorado'],
+  'FL AX2 RFT':['fl rft','rft fl','fl ax2 prueba rft'],
+  'FSER':['falla servidor','servidor caido','server error','servidor falla'],
+  // DSD05
+  'M2 St14':['vision check cannula','vision check aguja','m2 st14 vision'],
+  'M6 St05':['parche m6','transferencia parche m6','m6 parche'],
+  'M6 St11':['parche st11','transferencia parche st11'],
+  'M6 St12':['parche st12','transferencia parche st12'],
+  'LOROL':['carga rollo','rollo parche','cargar rollo m6'],
+  'QCSELL':['prueba sellado','sellado qc','test sellado'],
+  'M4 St07':['dispensado pj','pj dispensado','petrolato m4'],
+  'M4 St08':['dispensado pj st08','pj m4','petrolato dispense'],
+  'M2 St13':['push test','test push','prueba push'],
+  'M3 St10':['polyfeed','poly feed','m3 polyfeed'],
+  'M2 St16':['booster','carga booster','m2 booster'],
+
+};
+
+function onLineaChange(){
+  document.getElementById('txtDesc').value='';
+  document.getElementById('sugerencias').innerHTML='';
+  limpiar();
+}
+
+function onDescChange(){
+  var t = document.getElementById('txtDesc').value.toLowerCase().trim();
+  var linea = document.getElementById('selLinea').value;
+  if(t.length<2||!linea){ document.getElementById('sugerencias').innerHTML=''; return; }
+  buscar(t,linea);
+}
+
+function buscar(input,linea){
+  var items = LINEAS[linea]||[];
+  var scores=[];
+  items.forEach(function(c){
+    var score=0;
+    var eqs = EQS[c.cod]||[];
+    if(eqs.some(function(e){return e===input;})){ score=1.0; }
+    else{
+      var iw = input.split(' ');
+      var maxEq=0;
+      eqs.forEach(function(eq){
+        var ew = eq.split(' ');
+        var m = iw.filter(function(w){return ew.some(function(e){return e.includes(w);});});
+        if(m.length>0) maxEq = Math.max(maxEq, Math.min(0.5+m.length*0.15,0.95));
+      });
+      var desc = c.desc.toLowerCase();
+      var dw = desc.split(' ');
+      var dm = iw.filter(function(w){return dw.some(function(d){return d.includes(w);});});
+      var ds = dm.length>0 ? Math.min(0.3+dm.length*0.1,0.7) : 0;
+      var cs=0;
+      if(desc.includes(input)) cs=0.5;
+      if(c.cod.toLowerCase().includes(input)) cs=0.6;
+      score = Math.max(maxEq,ds,cs);
+    }
+    if(score>0.3) scores.push({cod:c.cod,desc:c.desc,score:Math.round(score*100)});
+  });
+  scores.sort(function(a,b){return b.score-a.score;});
+  mostrar(scores.slice(0,3));
+}
+
+function mostrar(matches){
+  var el = document.getElementById('sugerencias');
+  if(!matches.length){ el.innerHTML='<div style="color:var(--text-muted);font-size:0.85rem;">Sin coincidencias</div>'; return; }
+  el.innerHTML = matches.map(function(m){
+    var n = m.score>=85?'high':m.score>=60?'med':'low';
+    return '<div class="match-item" onclick="sel(\''+m.cod+'\',\''+m.desc.replace(/'/g,"\\'")+'\','+m.score+')">'
+      +'<div class="match-code">'+m.cod+'</div>'
+      +'<div class="match-desc">'+m.desc+'</div>'
+      +'<div class="match-conf '+n+'">'+m.score+'% confianza</div></div>';
+  }).join('');
+}
+
+function sel(cod,desc,score){
+  seleccion={cod:cod,desc:desc,score:score};
+  document.getElementById('btnGuardar').disabled=false;
+  var n = score>=85?'high':score>=60?'med':'low';
+  document.getElementById('infoBox').innerHTML = '<div class="info-code">'+cod+'</div><div class="info-desc">'+desc+'</div><div class="info-conf '+n+'">'+score+'% confianza</div>';
+}
+
+function limpiar(){
+  seleccion=null;
+  document.getElementById('btnGuardar').disabled=true;
+  document.getElementById('infoBox').innerHTML = '<div class="info-placeholder" style="padding:1.5rem;">Selecciona una sugerencia</div>';
+}
+
+function guardar(){
+  if(!seleccion) return;
+  var desc = document.getElementById('txtDesc').value;
+  var linea = document.getElementById('selLinea').value;
+  var now = new Date();
+  var ts = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  historial.unshift({cod:seleccion.cod,desc:desc,score:seleccion.score,linea:linea,time:ts});
+  if(historial.length>10) historial=historial.slice(0,10);
+  actualizarHist();
+  actualizarStats();
+  document.getElementById('txtDesc').value='';
+  document.getElementById('sugerencias').innerHTML='';
+  limpiar();
+}
+
+function actualizarHist(){
+  var el = document.getElementById('historial');
+  if(!historial.length){ el.innerHTML='<div class="info-placeholder" style="padding:1rem;">Sin capturas</div>'; return; }
+  el.innerHTML = historial.map(function(h){
+    return '<div class="hist-item"><div class="hist-code">'+h.cod+'</div><div class="hist-text">"'+h.desc+'" ['+h.linea+']</div><div class="hist-meta">'+h.time+' | '+h.score+'% confianza</div></div>';
+  }).join('');
+}
+
+function actualizarStats(){
+  document.getElementById('statCount').textContent = historial.length;
+  if(historial.length){
+    document.getElementById('statAvg').textContent = Math.round(historial.reduce(function(a,b){return a+b.score;},0)/historial.length)+'%';
+  }
+}
+</script>
+</body>
+</html>
