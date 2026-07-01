@@ -90,7 +90,7 @@ aside.sidebar {
   <div class="header-inner">
     <div class="header-titles">
       <h1>Motor Semantico DEXCOM</h1>
-      <p>Normalizacion de codigos de falla | Jabil Tijuana</p>
+      <p>Estandarizacion de Codigos de Downtime | Jabil Tijuana</p>
     </div>
     <div class="header-titles header-client">
       <p>Cliente</p>
@@ -132,19 +132,7 @@ aside.sidebar {
       <div id="infoBox" class="info-placeholder info-selected">Selecciona una sugerencia</div>
     </div>
 
-    <div class="panel">
-      <div class="panel-title">Estadisticas</div>
-      <div class="stat-grid">
-        <div class="stat-box">
-          <div class="stat-val" id="statCount">0</div>
-          <div class="stat-label">Capturas</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-val" id="statAvg">--</div>
-          <div class="stat-label">Confianza</div>
-        </div>
-      </div>
-    </div>
+
 
     <div class="panel">
       <div class="panel-title">Historial</div>
@@ -700,41 +688,32 @@ function clearSelection() {
 }
 
 function guardar() {
-  if (!seleccion) return;
-  const desc  = document.getElementById('txtDesc').value;
-  const linea = document.getElementById('selLinea').value;
-  const now   = new Date();
-  const ts    = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  historial.unshift({ cod: seleccion.cod, desc, score: seleccion.score, linea, time: ts });
-  if (historial.length > 10) historial = historial.slice(0, 10);
-  actualizarHist();
-  actualizarStats();
-  document.getElementById('txtDesc').value = '';
-  document.getElementById('sugerencias').innerHTML = '';
-  clearSelection();
+   if (!seleccion) return;
+   const desc  = document.getElementById('txtDesc').value;
+   const linea = document.getElementById('selLinea').value;
+   const now   = new Date();
+   const ts    = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+   historial.unshift({ cod: seleccion.cod, desc, score: seleccion.score, linea, time: ts });
+   if (historial.length > 10) historial = historial.slice(0, 10);
+   actualizarHist();
+   document.getElementById('txtDesc').value = '';
+   document.getElementById('sugerencias').innerHTML = '';
+   clearSelection();
 }
 
 function actualizarHist() {
-  const container = document.getElementById('historial');
-  if (!historial.length) {
-    container.innerHTML = '<div class="info-placeholder" style="padding:1rem;">Sin capturas</div>';
-    return;
-  }
-  container.innerHTML = historial.map(h =>
-    `<div class="hist-item">
-       <div class="hist-code">${h.cod}</div>
-       <div class="hist-text">"${h.desc}" [${h.linea}]</div>
-       <div class="hist-meta">${h.time} | ${h.score}% confianza</div>
-     </div>`
-  ).join('');
-}
-
-function actualizarStats() {
-  document.getElementById('statCount').textContent = historial.length;
-  if (historial.length) {
-    const avg = Math.round(historial.reduce((acc, h) => acc + h.score, 0) / historial.length);
-    document.getElementById('statAvg').textContent = `${avg}%`;
-  }
+   const container = document.getElementById('historial');
+   if (!historial.length) {
+     container.innerHTML = '<div class="info-placeholder" style="padding:1rem;">Sin capturas</div>';
+     return;
+   }
+   container.innerHTML = historial.map(h =>
+     `<div class="hist-item">
+        <div class="hist-code">${h.cod}</div>
+        <div class="hist-text">"${h.desc}" [${h.linea}]</div>
+        <div class="hist-meta">${h.time} | ${h.score}% confianza</div>
+      </div>`
+   ).join('');
 }
 </script>
 </body>
