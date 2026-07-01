@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor Semántico Jabil - GUI de Captura</title>
+    <style>
+        /* ============================================================================
+           RESET & BASE STYLES
+           ============================================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #e0e6ed;
+            overflow-x: hidden;
+        }
+
+        /* ============================================================================
+           LAYOUT & CONTAINER
+           ============================================================================ */
+        body {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 0;
+        }
+
+        header {
+            background: linear-gradient(90deg, #1a2332 0%, #243447 100%);
+            border-bottom: 2px solid #2d5a7b;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #4eb3e6;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        header h1::before {
+            content: "⚙️";
+            font-size: 1.6rem;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ============================================================================
+           PANELS & CARDS
+           ============================================================================ */
+        .panel {
+            background: linear-gradient(135deg, #1a2332 0%, #243447 100%);
+            border: 1px solid #2d5a7b;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #4eb3e6;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid #2d5a7b;
+        }
+
+        /* ============================================================================
+           FORM ELEMENTS
+           ============================================================================ */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #a8b5c7;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input[type="text"], input[type="search"], textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #2d5a7b;
+            border-radius: 8px;
+            background: #0f1419;
+            color: #e0e6ed;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        select:hover, input:hover, textarea:hover {
+            border-color: #4eb3e6;
+            box-shadow: 0 0 0 3px rgba(78, 179, 230, 0.1);
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #4eb3e6;
+            box-shadow: 0 0 0 3px rgba(78, 179, 230, 0.2);
+        }
+
+        select option {
+            background: #1a2332;
+            color: #e0e6ed;
+        }
+
+        /* ============================================================================
+           BUTTONS
+           ============================================================================ */
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #4eb3e6 0%, #3a94c4 100%);
+            color: #0f1419;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(78, 179, 230, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(78, 179, 230, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            width: auto;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ============================================================================
+           SUGGESTION RESULTS
+           ============================================================================ */
+        .suggestion-item {
+            background: linear-gradient(90deg, #0f1419 0%, #1a2332 100%);
+            border: 1px solid #2d5a7b;
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-item:hover {
+            border-color: #4eb3e6;
+            box-shadow: 0 4px 12px rgba(78, 179, 230, 0.2);
+        }
+
+        .suggestion-item.selected {
+            border-color: #27ae60;
+            background: linear-gradient(90deg, #0f1419 0%, #1a3a2e 100%);
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2);
+        }
+
+        .suggestion-code {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #4eb3e6;
+            font-family: 'Monaco', 'Courier New', monospace;
+            margin-bottom: 0.4rem;
+        }
+
+        .suggestion-description {
+            font-size: 0.9rem;
+            color: #a8b5c7;
+            margin-bottom: 0.6rem;
+        }
+
+        .suggestion-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        .confidence-alta {
+            background: #27ae60;
+            color: white;
+        }
+
+        .confidence-media {
+            background: #f39c12;
+            color: white;
+        }
+
+        .confidence-baja {
+            background: #e74c3c;
+            color: white;
+        }
+
+        /* ============================================================================
+           HISTORY / SIDEBAR
+           ============================================================================ */
+        .history-item {
+            background: #0f1419;
+            border: 1px solid #2d5a7b;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            border-color: #4eb3e6;
+            box-shadow: 0 2px 8px rgba(78, 179, 230, 0.2);
+        }
+
+        .history-time {
+            color: #7a8796;
+            font-size: 0.75rem;
+            margin-top: 0.4rem;
+        }
+
+        .history-code {
+            color: #4eb3e6;
+            font-weight: 600;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .history-desc {
+            color: #a8b5c7;
+            margin: 0.4rem 0;
+            font-style: italic;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #7a8796;
+            padding: 2rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* ============================================================================
+           STATUS MESSAGES
+           ============================================================================ */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: rgba(46, 134, 193, 0.15);
+            color: #5dade2;
+            border-left-color: #3498db;
+        }
+
+        .alert-success {
+            background: rgba(39, 174, 96, 0.15);
+            color: #52be80;
+            border-left-color: #27ae60;
+        }
+
+        .alert-error {
+            background: rgba(231, 76, 60, 0.15);
+            color: #f17269;
+            border-left-color: #e74c3c;
+        }
+
+        /* ============================================================================
+           LOADING STATE
+           ============================================================================ */
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #2d5a7b;
+            border-top: 2px solid #4eb3e6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ============================================================================
+           RESPONSIVE
+           ============================================================================ */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.4rem;
+            }
+
+            main {
+                padding: 1rem;
+                gap: 1.5rem;
+            }
+
+            .panel {
+                padding: 1.5rem;
+            }
+
+            .suggestion-item {
+                padding: 1rem;
+            }
+        }
+
+        /* ============================================================================
+           UTILITIES
+           ============================================================================ */
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+
+        .hidden {
+            display: none;
+        }
+
+        .text-muted {
+            color: #7a8796;
+        }
+
+        .text-small {
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- ========================================================================
+         HEADER
+         ======================================================================== -->
+    <header>
+        <h1>Motor Semántico Jabil</h1>
+        <p style="color: #7a8796; margin-top: 0.3rem; font-size: 0.9rem;">Sistema de normalización de códigos de falla en tiempo real</p>
+    </header>
+
+    <!-- ========================================================================
+         MAIN CONTENT
+         ======================================================================== -->
+    <main>
+        <!-- LEFT PANEL: CAPTURE & SUGGESTIONS -->
+        <div>
+            <!-- DATABASE STATUS -->
+            <div id="dbStatus" class="alert alert-info hidden">
+                <span class="spinner"></span> Cargando base de datos...
+            </div>
+
+            <!-- FILTERS PANEL -->
+            <div class="panel">
+                <div class="panel-header">📊 Filtros Jerárquicos</div>
+                
+                <div class="form-group">
+                    <label for="clientSelect">Cliente *</label>
+                    <select id="clientSelect" required>
+                        <option value="">-- Selecciona un cliente --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="lineSelect">Línea de Producción</label>
+                    <select id="lineSelect" disabled>
+                        <option value="">-- Selecciona una línea --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="machineSelect">Máquina (Opcional)</label>
+                    <select id="machineSelect" disabled>
+                        <option value="">-- Selecciona una máquina --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- CAPTURE PANEL -->
+            <div class="panel mt-3">
+                <div class="panel-header">🔤 Descripción de Falla</div>
+                
+                <div class="form-group">
+                    <label for="failureInput">Describe la falla (en tus propias palabras)</label>
+                    <textarea 
+                        id="failureInput" 
+                        placeholder="Ej: atoramiento canula, fuga en nido, overload generador, etc."
+                        rows="3"
+                        style="resize: vertical; font-family: 'Monaco', 'Courier New', monospace; font-size: 0.9rem;"></textarea>
+                </div>
+
+                <p class="text-muted text-small">
+                    💡 El sistema busca automáticamente códigos estándar mientras escribes.
+                </p>
+            </div>
+
+            <!-- SUGGESTIONS PANEL -->
+            <div class="panel mt-3">
+                <div class="panel-header">🎯 Sugerencias (Top 3)</div>
+                
+                <div id="suggestionsContainer">
+                    <div class="empty-state">
+                        Escribe una descripción para ver sugerencias...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: HISTORY & INFO -->
+        <aside>
+            <!-- SAVE BUTTON -->
+            <button 
+                id="saveBtn" 
+                class="btn-success" 
+                disabled
+                style="width: 100%; margin-bottom: 1rem;">
+                💾 Guardar Captura
+            </button>
+
+            <!-- INFO PANEL -->
+            <div id="selectedInfo" class="panel hidden">
+                <div class="panel-header">ℹ️ Código Seleccionado</div>
+                <div id="selectedDetails"></div>
+            </div>
+
+            <!-- HISTORY PANEL -->
+            <div class="panel mt-3">
+                <div class="panel-header">📋 Últimas 10 Capturas</div>
+                <div id="historyContainer">
+                    <div class="empty-state">Sin capturas aún</div>
+                </div>
+            </div>
+
+            <!-- STATISTICS -->
+            <div class="panel mt-3">
+                <div class="panel-header">📈 Estadísticas</div>
+                <div style="font-size: 0.9rem;">
+                    <div style="margin-bottom: 0.8rem;">
+                        <span class="text-muted">Capturas guardadas:</span>
+                        <strong style="color: #4eb3e6;" id="statsTotal">0</strong>
+                    </div>
+                    <div style="margin-bottom: 0.8rem;">
+                        <span class="text-muted">Cliente seleccionado:</span>
+                        <strong style="color: #4eb3e6;" id="statsClient">-</strong>
+                    </div>
+                    <div>
+                        <span class="text-muted">Confianza promedio:</span>
+                        <strong style="color: #4eb3e6;" id="statsConfidence">-</strong>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- ========================================================================
+         SCRIPTS - SEMANTIC MOTOR & APPLICATION LOGIC
+         ======================================================================== -->
+    <!-- sql.js from alternative CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <script>
+        // ========================================================================
+        // STATE & CONFIGURATION
+        // ========================================================================
+        const app = {
+            db: null,
+            SQL: null,
+            selectedClient: null,
+            selectedLine: null,
+            selectedMachine: null,
+            selectedCode: null,
+            selectedConfidence: null,
+            history: [],
+
+            // Configuration constants
+            MIN_CONFIDENCE_THRESHOLD: 0.4,
+            FUZZY_THRESHOLD: 0.5,
+            TOP_SUGGESTIONS: 3,
+        };
+
+        // ========================================================================
+        // SIMILARITY ALGORITHMS
+        // ========================================================================
+
+        /**
+         * Levenshtein distance - measures string similarity
+         * Returns number: 0 = exact match, higher = more different
+         */
+        function levenshteinDistance(s1, s2) {
+            const len1 = s1.length;
+            const len2 = s2.length;
+            const matrix = Array.from({ length: len2 + 1 }, (_, i) => [i]);
+
+            for (let i = 0; i <= len1; i++) {
+                matrix[0] = matrix[0] || [];
+                matrix[0][i] = i;
+            }
+
+            for (let i = 1; i <= len2; i++) {
+                for (let j = 1; j <= len1; j++) {
+                    const cost = s1[j - 1] === s2[i - 1] ? 0 : 1;
+                    matrix[i][j] = Math.min(
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j] + 1,
+                        matrix[i - 1][j - 1] + cost
+                    );
+                }
+            }
+
+            return matrix[len2][len1];
+        }
+
+        /**
+         * Calculate similarity score (0-1)
+         * 1 = exact match, 0 = completely different
+         */
+        function calculateSimilarity(s1, s2) {
+            const s1_norm = s1.toLowerCase().trim();
+            const s2_norm = s2.toLowerCase().trim();
+
+            if (s1_norm === s2_norm) return 1.0;
+            if (!s1_norm || !s2_norm) return 0.0;
+
+            const distance = levenshteinDistance(s1_norm, s2_norm);
+            const maxLen = Math.max(s1_norm.length, s2_norm.length);
+            return 1 - (distance / maxLen);
+        }
+
+        /**
+         * Semantic matching with multiple strategies
+         * - Exact/partial word matching
+         * - Fuzzy string matching
+         * - Weighted scoring
+         */
+        function semanticMatch(input, candidates) {
+            const input_lower = input.toLowerCase().trim();
+            const input_words = input_lower.split(/\s+/);
+
+            const scored = candidates.map(candidate => {
+                const equiv_lower = candidate.equivalencia.toLowerCase().trim();
+                const desc_lower = candidate.descripcion_oficial.toLowerCase().trim();
+
+                let score = 0;
+
+                // Strategy 1: Direct word match in equivalencia
+                const equiv_words = equiv_lower.split(/\s+/);
+                const word_matches = input_words.filter(w => 
+                    equiv_words.some(ew => ew.includes(w) || w.includes(ew))
+                ).length;
+                score += (word_matches / Math.max(input_words.length, 1)) * 0.4;
+
+                // Strategy 2: Fuzzy similarity on equivalencia
+                const fuzzy_equiv = calculateSimilarity(input_lower, equiv_lower);
+                score += fuzzy_equiv * 0.4;
+
+                // Strategy 3: Fuzzy similarity on official description
+                const fuzzy_desc = calculateSimilarity(input_lower, desc_lower);
+                score += fuzzy_desc * 0.2;
+
+                // Boost exact substring matches
+                if (equiv_lower.includes(input_lower) || input_lower.includes(equiv_lower)) {
+                    score = Math.min(1.0, score + 0.3);
+                }
+
+                return {
+                    ...candidate,
+                    score: Math.min(1.0, score),
+                    match_type: word_matches > 0 ? 'word' : 'fuzzy'
+                };
+            });
+
+            return scored
+                .filter(s => s.score >= app.FUZZY_THRESHOLD)
+                .sort((a, b) => b.score - a.score);
+        }
+
+        /**
+         * Get confidence level label
+         */
+        function getConfidenceLevel(score) {
+            if (score >= 0.85) return 'Alta';
+            if (score >= 0.65) return 'Media';
+            return 'Baja';
+        }
+
+        /**
+         * Get confidence level class
+         */
+        function getConfidenceLevelClass(score) {
+            if (score >= 0.85) return 'confidence-alta';
+            if (score >= 0.65) return 'confidence-media';
+            return 'confidence-baja';
+        }
+
+        // ========================================================================
+        // DATABASE OPERATIONS
+        // ========================================================================
+
+        /**
+         * Load SQLite database from file
+         */
+        async function loadDatabase() {
+            try {
+                showDbStatus(true);
+                
+                // Load sql.js con reintentos
+                let SQL;
+                let retries = 3;
+                let lastError;
+                
+                while (retries > 0) {
+                    try {
+                        // Espera a que initSqlJs esté disponible
+                        if (typeof initSqlJs === 'undefined') {
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                        }
+                        SQL = await initSqlJs({
+                            locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+                        });
+                        app.SQL = SQL;
+                        break;
+                    } catch (e) {
+                        lastError = e;
+                        retries--;
+                        if (retries > 0) {
+                            console.log(`⚠️ Reintentando carga de sql.js (${retries} intentos restantes)...`);
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    }
+                }
+                
+                if (!app.SQL) {
+                    throw new Error(`No se pudo cargar sql.js después de 3 intentos: ${lastError.message}`);
+                }
+
+                // Fetch database file
+                const response = await fetch('jabil_motor.db');
+                if (!response.ok) {
+                    throw new Error(`No se encontró jabil_motor.db. Asegúrate de que está en la misma carpeta que motor-gui.html (${response.status})`);
+                }
+
+                const data = await response.arrayBuffer();
+                app.db = new app.SQL.Database(new Uint8Array(data));
+
+                showDbStatus(false);
+                console.log('✅ Base de datos cargada correctamente');
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Error cargando base de datos:', error);
+                const msg = `
+                    Error cargando base de datos:
+                    
+                    ${error.message}
+                    
+                    Soluciones:
+                    1. Verifica que 'jabil_motor.db' está en la misma carpeta
+                    2. Revisa la conexión de internet
+                    3. Intenta abrir en otro navegador (Chrome, Firefox)
+                    4. Limpia el caché del navegador
+                `;
+                showAlert(msg, 'error');
+                return false;
+            }
+        }
+
+        /**
+         * Query database with parameters
+         */
+        function queryDB(sql, params = []) {
+            try {
+                const stmt = app.db.prepare(sql);
+                stmt.bind(params);
+                const results = [];
+                while (stmt.step()) {
+                    results.push(stmt.getAsObject());
+                }
+                stmt.free();
+                return results;
+            } catch (error) {
+                console.error('❌ Query error:', sql, error);
+                return [];
+            }
+        }
+
+        /**
+         * Execute INSERT/UPDATE/DELETE
+         */
+        function executeDB(sql, params = []) {
+            try {
+                const stmt = app.db.prepare(sql);
+                stmt.bind(params);
+                stmt.step();
+                stmt.free();
+                return true;
+            } catch (error) {
+                console.error('❌ Execute error:', sql, error);
+                return false;
+            }
+        }
+
+        // ========================================================================
+        // UI UPDATES
+        // ========================================================================
+
+        /**
+         * Show/hide database loading status
+         */
+        function showDbStatus(show) {
+            const el = document.getElementById('dbStatus');
+            if (show) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Show alert message
+         */
+        function showAlert(message, type = 'info') {
+            const alertClass = `alert alert-${type}`;
+            const container = document.querySelector('.panel-header').parentElement;
+            
+            const alert = document.createElement('div');
+            alert.className = alertClass;
+            alert.textContent = message;
+            
+            container.insertBefore(alert, container.firstChild);
+            
+            setTimeout(() => alert.remove(), 4000);
+        }
+
+        /**
+         * Populate client dropdown
+         */
+        function populateClients() {
+            const clients = queryDB('SELECT id_cliente, nombre FROM tbl_cliente ORDER BY nombre');
+            const select = document.getElementById('clientSelect');
+            
+            clients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client.id_cliente;
+                option.textContent = client.nombre;
+                select.appendChild(option);
+            });
+        }
+
+        /**
+         * Populate lines based on selected client
+         */
+        function populateLines(clientId) {
+            const select = document.getElementById('lineSelect');
+            const machineSelect = document.getElementById('machineSelect');
+            
+            // Clear both dropdowns
+            select.innerHTML = '<option value="">-- Selecciona una línea --</option>';
+            machineSelect.innerHTML = '<option value="">-- Selecciona una máquina --</option>';
+            machineSelect.disabled = true;
+
+            if (!clientId) {
+                select.disabled = true;
+                return;
+            }
+
+            const lines = queryDB(
+                'SELECT id_linea, nombre FROM tbl_linea_produccion WHERE id_cliente = ? ORDER BY nombre',
+                [clientId]
+            );
+
+            select.disabled = false;
+
+            if (lines.length === 0) {
+                select.disabled = true;
+                return;
+            }
+
+            lines.forEach(line => {
+                const option = document.createElement('option');
+                option.value = line.id_linea;
+                option.textContent = line.nombre;
+                select.appendChild(option);
+            });
+        }
+
+        /**
+         * Populate machines based on selected line
+         */
+        function populateMachines(lineId) {
+            const select = document.getElementById('machineSelect');
+            select.innerHTML = '<option value="">-- Selecciona una máquina --</option>';
+
+            if (!lineId) {
+                select.disabled = true;
+                return;
+            }
+
+            const machines = queryDB(
+                'SELECT id_maquina, nombre FROM tbl_maquina WHERE id_linea = ? ORDER BY nombre',
+                [lineId]
+            );
+
+            select.disabled = false;
+
+            if (machines.length === 0) {
+                select.disabled = true;
+                return;
+            }
+
+            machines.forEach(machine => {
+                const option = document.createElement('option');
+                option.value = machine.id_maquina;
+                option.textContent = machine.nombre;
+                select.appendChild(option);
+            });
+        }
+
+        /**
+         * Update suggestions in real-time
+         */
+        function updateSuggestions(input) {
+            const container = document.getElementById('suggestionsContainer');
+            const saveBtn = document.getElementById('saveBtn');
+
+            // Clear previous selection
+            app.selectedCode = null;
+            app.selectedConfidence = null;
+            updateSelectedInfo();
+
+            // Enable/disable save button
+            saveBtn.disabled = !input || !app.selectedClient;
+
+            if (!input || input.length < 2) {
+                container.innerHTML = '<div class="empty-state">Escribe al menos 2 caracteres...</div>';
+                return;
+            }
+
+            if (!app.selectedClient) {
+                container.innerHTML = '<div class="empty-state">Selecciona un cliente primero</div>';
+                return;
+            }
+
+            // Get all codes and equivalencies for this client
+            const candidates = queryDB(`
+                SELECT 
+                    cf.id_codigo,
+                    cf.codigo,
+                    cf.descripcion_oficial,
+                    eq.equivalencia
+                FROM tbl_codigo_falla cf
+                LEFT JOIN tbl_equivalencias eq ON cf.id_codigo = eq.id_codigo
+                WHERE cf.id_cliente = ?
+                ORDER BY cf.codigo
+            `, [app.selectedClient]);
+
+            if (candidates.length === 0) {
+                container.innerHTML = '<div class="empty-state">No hay códigos configurados para este cliente</div>';
+                return;
+            }
+
+            // Run semantic matching
+            const matches = semanticMatch(input, candidates);
+
+            if (matches.length === 0) {
+                container.innerHTML = '<div class="empty-state">No se encontraron coincidencias. Intenta con otras palabras.</div>';
+                return;
+            }
+
+            // Group by code and get best score per code
+            const codeScores = new Map();
+            matches.forEach(match => {
+                if (!codeScores.has(match.id_codigo)) {
+                    codeScores.set(match.id_codigo, {
+                        id_codigo: match.id_codigo,
+                        codigo: match.codigo,
+                        descripcion_oficial: match.descripcion_oficial,
+                        score: match.score
+                    });
+                } else {
+                    const existing = codeScores.get(match.id_codigo);
+                    if (match.score > existing.score) {
+                        existing.score = match.score;
+                    }
+                }
+            });
+
+            // Get top 3
+            const top3 = Array.from(codeScores.values())
+                .sort((a, b) => b.score - a.score)
+                .slice(0, app.TOP_SUGGESTIONS);
+
+            // Render suggestions
+            container.innerHTML = top3.map((suggestion, index) => `
+                <div class="suggestion-item" data-code-id="${suggestion.id_codigo}">
+                    <div class="suggestion-code">${suggestion.codigo}</div>
+                    <div class="suggestion-description">${suggestion.descripcion_oficial}</div>
+                    <div class="suggestion-meta">
+                        <span class="text-muted">Coincidencia #${index + 1}</span>
+                        <span class="confidence-badge ${getConfidenceLevelClass(suggestion.score)}">
+                            ${getConfidenceLevel(suggestion.score)} (${Math.round(suggestion.score * 100)}%)
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click handlers
+            container.querySelectorAll('.suggestion-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    selectSuggestion(item);
+                });
+            });
+
+            saveBtn.disabled = false;
+        }
+
+        /**
+         * Select a suggestion
+         */
+        function selectSuggestion(element) {
+            // Remove previous selection
+            document.querySelectorAll('.suggestion-item').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Mark as selected
+            element.classList.add('selected');
+
+            const codeId = parseInt(element.dataset.codeId);
+            const code = element.querySelector('.suggestion-code').textContent;
+            const description = element.querySelector('.suggestion-description').textContent;
+            const confidence = parseFloat(
+                element.querySelector('.confidence-badge').textContent.match(/\d+/)[0]
+            ) / 100;
+
+            app.selectedCode = code;
+            app.selectedConfidence = confidence;
+
+            updateSelectedInfo(code, description, confidence);
+        }
+
+        /**
+         * Update selected info panel
+         */
+        function updateSelectedInfo(code, description, confidence) {
+            const panel = document.getElementById('selectedInfo');
+            const details = document.getElementById('selectedDetails');
+
+            if (!code) {
+                panel.classList.add('hidden');
+                return;
+            }
+
+            panel.classList.remove('hidden');
+            details.innerHTML = `
+                <div style="margin-bottom: 1rem;">
+                    <div class="text-muted text-small">CÓDIGO</div>
+                    <div style="font-size: 1.3rem; color: #4eb3e6; font-weight: 600; font-family: monospace; margin: 0.4rem 0;">
+                        ${code}
+                    </div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <div class="text-muted text-small">DESCRIPCIÓN</div>
+                    <div style="color: #a8b5c7; margin: 0.4rem 0;">
+                        ${description}
+                    </div>
+                </div>
+                <div>
+                    <div class="text-muted text-small">CONFIANZA</div>
+                    <div style="margin-top: 0.4rem;">
+                        <span class="confidence-badge ${getConfidenceLevelClass(confidence)}">
+                            ${getConfidenceLevel(confidence)} - ${Math.round(confidence * 100)}%
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Save capture to database
+         */
+        function saveCapture() {
+            const client = document.getElementById('clientSelect').value;
+            const line = document.getElementById('lineSelect').value;
+            const machine = document.getElementById('machineSelect').value;
+            const input = document.getElementById('failureInput').value.trim();
+
+            if (!client || !input || !app.selectedCode) {
+                showAlert('Por favor selecciona cliente y código', 'error');
+                return;
+            }
+
+            const success = executeDB(
+                `INSERT INTO tbl_captura_datos 
+                 (id_cliente, id_maquina, descripcion_entrada, codigo_detectado, confianza_match, timestamp)
+                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+                [client, machine || null, input, app.selectedCode, app.selectedConfidence]
+            );
+
+            if (success) {
+                showAlert('✅ Captura guardada correctamente', 'success');
+                document.getElementById('failureInput').value = '';
+                updateHistory();
+                updateStatistics();
+                
+                // Reset
+                app.selectedCode = null;
+                app.selectedConfidence = null;
+                document.getElementById('suggestionsContainer').innerHTML = 
+                    '<div class="empty-state">Escribe una descripción para ver sugerencias...</div>';
+                updateSelectedInfo();
+            } else {
+                showAlert('Error al guardar captura', 'error');
+            }
+        }
+
+        /**
+         * Update history panel
+         */
+        function updateHistory() {
+            const clientId = document.getElementById('clientSelect').value;
+            if (!clientId) return;
+
+            const history = queryDB(`
+                SELECT 
+                    cd.id_captura,
+                    cd.descripcion_entrada,
+                    cd.codigo_detectado,
+                    cd.confianza_match,
+                    cd.timestamp,
+                    c.nombre as cliente
+                FROM tbl_captura_datos cd
+                JOIN tbl_cliente c ON cd.id_cliente = c.id_cliente
+                WHERE cd.id_cliente = ?
+                ORDER BY cd.timestamp DESC
+                LIMIT 10
+            `, [clientId]);
+
+            const container = document.getElementById('historyContainer');
+
+            if (history.length === 0) {
+                container.innerHTML = '<div class="empty-state">Sin capturas aún</div>';
+                return;
+            }
+
+            container.innerHTML = history.map(record => {
+                const date = new Date(record.timestamp);
+                const timeStr = date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                const dateStr = date.toLocaleDateString('es-ES');
+
+                return `
+                    <div class="history-item">
+                        <div class="history-code">${record.codigo_detectado}</div>
+                        <div class="history-desc">"${record.descripcion_entrada}"</div>
+                        <div class="history-time">${timeStr} • ${dateStr}</div>
+                        <div class="text-muted text-small" style="margin-top: 0.4rem;">
+                            Conf: ${Math.round(record.confianza_match * 100)}%
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        /**
+         * Update statistics
+         */
+        function updateStatistics() {
+            const clientId = document.getElementById('clientSelect').value;
+
+            // Total captures
+            const totalResult = queryDB('SELECT COUNT(*) as count FROM tbl_captura_datos');
+            document.getElementById('statsTotal').textContent = totalResult[0]?.count || 0;
+
+            // Client name
+            if (clientId) {
+                const clientResult = queryDB(
+                    'SELECT nombre FROM tbl_cliente WHERE id_cliente = ?',
+                    [clientId]
+                );
+                document.getElementById('statsClient').textContent = clientResult[0]?.nombre || '-';
+            } else {
+                document.getElementById('statsClient').textContent = '-';
+            }
+
+            // Average confidence
+            const avgResult = queryDB(
+                'SELECT AVG(confianza_match) as avg FROM tbl_captura_datos WHERE confianza_match > 0'
+            );
+            const avgConf = avgResult[0]?.avg;
+            if (avgConf) {
+                document.getElementById('statsConfidence').textContent = `${Math.round(avgConf * 100)}%`;
+            } else {
+                document.getElementById('statsConfidence').textContent = '-';
+            }
+        }
+
+        // ========================================================================
+        // EVENT LISTENERS
+        // ========================================================================
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load database
+            const dbLoaded = await loadDatabase();
+            if (!dbLoaded) return;
+
+            // Populate initial data
+            populateClients();
+            updateStatistics();
+
+            // Client selection
+            document.getElementById('clientSelect').addEventListener('change', (e) => {
+                const clientId = e.target.value;
+                app.selectedClient = clientId ? parseInt(clientId) : null;
+                
+                populateLines(clientId);
+                updateHistory();
+                updateStatistics();
+                
+                // Clear suggestions
+                document.getElementById('suggestionsContainer').innerHTML = 
+                    '<div class="empty-state">Escribe una descripción para ver sugerencias...</div>';
+                document.getElementById('failureInput').value = '';
+            });
+
+            // Line selection
+            document.getElementById('lineSelect').addEventListener('change', (e) => {
+                app.selectedLine = e.target.value ? parseInt(e.target.value) : null;
+                populateMachines(e.target.value);
+            });
+
+            // Machine selection
+            document.getElementById('machineSelect').addEventListener('change', (e) => {
+                app.selectedMachine = e.target.value ? parseInt(e.target.value) : null;
+            });
+
+            // Real-time suggestions
+            document.getElementById('failureInput').addEventListener('input', (e) => {
+                updateSuggestions(e.target.value);
+            });
+
+            // Save button
+            document.getElementById('saveBtn').addEventListener('click', () => {
+                saveCapture();
+            });
+
+            // Allow Enter key to save (when field is focused)
+            document.getElementById('failureInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    if (!document.getElementById('saveBtn').disabled) {
+                        saveCapture();
+                    }
+                }
+            });
+
+            console.log('✅ Aplicación lista');
+        });
+    </script>
+</body>
+</html>
