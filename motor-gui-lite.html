@@ -52,17 +52,15 @@ button:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
 .match-desc{font-size:0.78rem;color:var(--text-muted);margin-top:0.15rem;}
 .match-item.selected .match-desc{color:#e0e8f0;}
 .match-conf{font-size:0.72rem;margin-top:0.15rem;}
-.match-conf.high{color:var(--success);}
-.match-conf.med{color:var(--warn);}
-.match-conf.low{color:var(--danger);}
 .match-item.selected .match-conf{color:#e0e8f0;}
 .info-box{background:var(--navy-dk);border-radius:5px;padding:1rem;min-height:80px;display:flex;flex-direction:column;justify-content:center;}
 .info-code{font-size:1.4rem;font-weight:600;color:var(--blue);font-family:monospace;}
 .info-desc{color:var(--text-muted);font-size:0.85rem;margin-top:0.3rem;}
 .info-conf{font-size:0.8rem;margin-top:0.3rem;}
-.info-conf.high{color:var(--success);}
-.info-conf.med{color:var(--warn);}
-.info-conf.low{color:var(--danger);}
+/* Clases de confianza compartidas entre sugerencias e info-box */
+.conf-high{color:var(--success);}
+.conf-med{color:var(--warn);}
+.conf-low{color:var(--danger);}
 .info-placeholder{color:var(--text-muted);font-size:0.85rem;text-align:center;}
 .hist-item{background:var(--navy-dk);border-left:3px solid var(--blue);padding:0.55rem 0.7rem;margin-bottom:0.45rem;border-radius:2px;font-size:0.85rem;}
 .hist-code{font-weight:600;color:var(--blue);font-family:monospace;font-size:0.9rem;}
@@ -73,6 +71,11 @@ button:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
 .stat-val{font-size:1.8rem;font-weight:600;color:var(--blue);}
 .stat-label{font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-top:0.15rem;}
 footer{text-align:center;padding:0.7rem 2rem;font-size:0.7rem;color:var(--text-muted);border-top:1px solid var(--border);opacity:0.7;}
+.header-client{text-align:right;}
+.panel-section{margin-top:1.5rem;}
+.suggestions-container{min-height:70px;}
+.info-selected{padding:1.5rem;}
+.panel-stacked{margin-top:1rem;}
 </style>
 </head>
 <body>
@@ -83,7 +86,7 @@ footer{text-align:center;padding:0.7rem 2rem;font-size:0.7rem;color:var(--text-m
       <h1>Motor Semantico DEXCOM</h1>
       <p>Normalizacion de codigos de falla | Jabil Tijuana</p>
     </div>
-    <div class="header-titles" style="text-align:right;">
+    <div class="header-titles header-client">
       <p>Cliente</p>
       <h1 style="font-size:14px;">DEXCOM</h1>
     </div>
@@ -105,26 +108,26 @@ footer{text-align:center;padding:0.7rem 2rem;font-size:0.7rem;color:var(--text-m
       </select>
     </div>
 
-    <div class="panel-title" style="margin-top:1.5rem;">Descripcion del Error</div>
+    <div class="panel-title panel-section">Descripcion del Error</div>
 
     <div class="form-group">
       <label>Describe lo que observaste</label>
       <textarea id="txtDesc" rows="3" placeholder="Ej: atoramiento canula, elevador falla, conveyor parado" oninput="onDescChange()"></textarea>
     </div>
 
-    <div class="panel-title" style="margin-top:1.5rem;">Sugerencias</div>
-    <div id="sugerencias" style="min-height:70px;"></div>
+    <div class="panel-title panel-section">Sugerencias</div>
+    <div id="sugerencias" class="suggestions-container"></div>
 
-    <button onclick="guardar()" style="margin-top:1rem;" id="btnGuardar" disabled>Guardar</button>
+    <button onclick="guardar()" class="panel-section" id="btnGuardar" disabled>Guardar</button>
   </div>
 
   <div>
     <div class="panel">
       <div class="panel-title">Codigo Seleccionado</div>
-      <div id="infoBox" class="info-placeholder" style="padding:1.5rem;">Selecciona una sugerencia</div>
+      <div id="infoBox" class="info-placeholder info-selected">Selecciona una sugerencia</div>
     </div>
 
-    <div class="panel" style="margin-top:1rem;">
+    <div class="panel panel-stacked">
       <div class="panel-title">Estadisticas</div>
       <div class="stat-grid">
         <div class="stat-box">
@@ -138,7 +141,7 @@ footer{text-align:center;padding:0.7rem 2rem;font-size:0.7rem;color:var(--text-m
       </div>
     </div>
 
-    <div class="panel" style="margin-top:1rem;">
+    <div class="panel panel-stacked">
       <div class="panel-title">Historial</div>
       <div id="historial" style="max-height:280px;overflow-y:auto;">
         <div class="info-placeholder" style="padding:1rem;">Sin capturas</div>
@@ -150,8 +153,8 @@ footer{text-align:center;padding:0.7rem 2rem;font-size:0.7rem;color:var(--text-m
 <footer>Motor Semantico DEXCOM · Logica SQL lista para integracion con Power Apps · Jabil 2026</footer>
 
 <script>
-var historial = [];
-var seleccion = null;
+let historial = [];
+let seleccion = null;
 
 const LINEAS = {
   'TSA': [
@@ -559,101 +562,158 @@ const EQS = {
 
 };
 
-function onLineaChange(){
-  document.getElementById('txtDesc').value='';
-  document.getElementById('sugerencias').innerHTML='';
-  limpiar();
+// Constantes de scoring — evita números mágicos dispersos en el código
+const SCORE_EQ_BASE    = 0.5;
+const SCORE_EQ_PER_WORD = 0.15;
+const SCORE_EQ_MAX     = 0.95;
+const SCORE_DESC_BASE  = 0.3;
+const SCORE_DESC_PER_WORD = 0.1;
+const SCORE_DESC_MAX   = 0.7;
+const SCORE_DESC_SUBSTR = 0.5;
+const SCORE_CODE_SUBSTR = 0.6;
+const SCORE_THRESHOLD  = 0.3;
+
+// Convierte un score numérico (0–100) al nivel de confianza visual
+function getConfidenceLevel(score) {
+  return score >= 85 ? 'high' : score >= 60 ? 'med' : 'low';
 }
 
-function onDescChange(){
-  var t = document.getElementById('txtDesc').value.toLowerCase().trim();
-  var linea = document.getElementById('selLinea').value;
-  if(t.length<2||!linea){ document.getElementById('sugerencias').innerHTML=''; return; }
-  buscar(t,linea);
+function onLineaChange() {
+  document.getElementById('txtDesc').value = '';
+  document.getElementById('sugerencias').innerHTML = '';
+  clearSelection();
 }
 
-function buscar(input,linea){
-  var items = LINEAS[linea]||[];
-  var scores=[];
-  items.forEach(function(c){
-    var score=0;
-    var eqs = EQS[c.cod]||[];
-    if(eqs.some(function(e){return e===input;})){ score=1.0; }
-    else{
-      var iw = input.split(' ');
-      var maxEq=0;
-      eqs.forEach(function(eq){
-        var ew = eq.split(' ');
-        var m = iw.filter(function(w){return ew.some(function(e){return e.includes(w);});});
-        if(m.length>0) maxEq = Math.max(maxEq, Math.min(0.5+m.length*0.15,0.95));
+function onDescChange() {
+  const input = document.getElementById('txtDesc').value.toLowerCase().trim();
+  const linea = document.getElementById('selLinea').value;
+  if (input.length < 2 || !linea) {
+    document.getElementById('sugerencias').innerHTML = '';
+    return;
+  }
+  buscar(input, linea);
+}
+
+function buscar(input, linea) {
+  const items = LINEAS[linea] || [];
+  const scores = [];
+
+  items.forEach(codeEntry => {
+    let score = 0;
+    const eqs = EQS[codeEntry.cod] || [];
+
+    // Estrategia 1: match exacto de equivalencias (100%)
+    if (eqs.some(eq => eq === input)) {
+      score = 1.0;
+    } else {
+      const inputWords = input.split(' ');
+
+      // Estrategia 2: match parcial por palabras en equivalencias
+      let bestEqScore = 0;
+      eqs.forEach(eq => {
+        const eqWords = eq.split(' ');
+        const matchedWords = inputWords.filter(w => eqWords.some(e => e.includes(w)));
+        if (matchedWords.length > 0) {
+          bestEqScore = Math.max(
+            bestEqScore,
+            Math.min(SCORE_EQ_BASE + matchedWords.length * SCORE_EQ_PER_WORD, SCORE_EQ_MAX)
+          );
+        }
       });
-      var desc = c.desc.toLowerCase();
-      var dw = desc.split(' ');
-      var dm = iw.filter(function(w){return dw.some(function(d){return d.includes(w);});});
-      var ds = dm.length>0 ? Math.min(0.3+dm.length*0.1,0.7) : 0;
-      var cs=0;
-      if(desc.includes(input)) cs=0.5;
-      if(c.cod.toLowerCase().includes(input)) cs=0.6;
-      score = Math.max(maxEq,ds,cs);
+
+      // Estrategia 3: match por descripción y código
+      const desc = codeEntry.desc.toLowerCase();
+      const descWords = desc.split(' ');
+      const descMatches = inputWords.filter(w => descWords.some(d => d.includes(w)));
+      const descScore = descMatches.length > 0
+        ? Math.min(SCORE_DESC_BASE + descMatches.length * SCORE_DESC_PER_WORD, SCORE_DESC_MAX)
+        : 0;
+
+      let codeScore = 0;
+      if (desc.includes(input))                   codeScore = SCORE_DESC_SUBSTR;
+      if (codeEntry.cod.toLowerCase().includes(input)) codeScore = SCORE_CODE_SUBSTR;
+
+      score = Math.max(bestEqScore, descScore, codeScore);
     }
-    if(score>0.3) scores.push({cod:c.cod,desc:c.desc,score:Math.round(score*100)});
+
+    if (score > SCORE_THRESHOLD) {
+      scores.push({ cod: codeEntry.cod, desc: codeEntry.desc, score: Math.round(score * 100) });
+    }
   });
-  scores.sort(function(a,b){return b.score-a.score;});
-  mostrar(scores.slice(0,3));
+
+  scores.sort((a, b) => b.score - a.score);
+  mostrar(scores.slice(0, 3));
 }
 
-function mostrar(matches){
-  var el = document.getElementById('sugerencias');
-  if(!matches.length){ el.innerHTML='<div style="color:var(--text-muted);font-size:0.85rem;">Sin coincidencias</div>'; return; }
-  el.innerHTML = matches.map(function(m){
-    var n = m.score>=85?'high':m.score>=60?'med':'low';
-    return '<div class="match-item" onclick="sel(\''+m.cod+'\',\''+m.desc.replace(/'/g,"\\'")+'\','+m.score+')">'
-      +'<div class="match-code">'+m.cod+'</div>'
-      +'<div class="match-desc">'+m.desc+'</div>'
-      +'<div class="match-conf '+n+'">'+m.score+'% confianza</div></div>';
+function mostrar(matches) {
+  const container = document.getElementById('sugerencias');
+  if (!matches.length) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;">Sin coincidencias</div>';
+    return;
+  }
+  container.innerHTML = matches.map(entry => {
+    const confidenceLevel = getConfidenceLevel(entry.score);
+    const safeDesc = entry.desc.replace(/'/g, "\\'");
+    return `<div class="match-item" onclick="selectCode('${entry.cod}','${safeDesc}',${entry.score})">
+      <div class="match-code">${entry.cod}</div>
+      <div class="match-desc">${entry.desc}</div>
+      <div class="match-conf conf-${confidenceLevel}">${entry.score}% confianza</div>
+    </div>`;
   }).join('');
 }
 
-function sel(cod,desc,score){
-  seleccion={cod:cod,desc:desc,score:score};
-  document.getElementById('btnGuardar').disabled=false;
-  var n = score>=85?'high':score>=60?'med':'low';
-  document.getElementById('infoBox').innerHTML = '<div class="info-code">'+cod+'</div><div class="info-desc">'+desc+'</div><div class="info-conf '+n+'">'+score+'% confianza</div>';
+function selectCode(cod, desc, score) {
+  seleccion = { cod, desc, score };
+  document.getElementById('btnGuardar').disabled = false;
+  const confidenceLevel = getConfidenceLevel(score);
+  document.getElementById('infoBox').innerHTML =
+    `<div class="info-code">${cod}</div>
+     <div class="info-desc">${desc}</div>
+     <div class="info-conf conf-${confidenceLevel}">${score}% confianza</div>`;
 }
 
-function limpiar(){
-  seleccion=null;
-  document.getElementById('btnGuardar').disabled=true;
-  document.getElementById('infoBox').innerHTML = '<div class="info-placeholder" style="padding:1.5rem;">Selecciona una sugerencia</div>';
+function clearSelection() {
+  seleccion = null;
+  document.getElementById('btnGuardar').disabled = true;
+  document.getElementById('infoBox').innerHTML =
+    '<div class="info-placeholder info-selected">Selecciona una sugerencia</div>';
 }
 
-function guardar(){
-  if(!seleccion) return;
-  var desc = document.getElementById('txtDesc').value;
-  var linea = document.getElementById('selLinea').value;
-  var now = new Date();
-  var ts = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-  historial.unshift({cod:seleccion.cod,desc:desc,score:seleccion.score,linea:linea,time:ts});
-  if(historial.length>10) historial=historial.slice(0,10);
+function guardar() {
+  if (!seleccion) return;
+  const desc  = document.getElementById('txtDesc').value;
+  const linea = document.getElementById('selLinea').value;
+  const now   = new Date();
+  const ts    = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  historial.unshift({ cod: seleccion.cod, desc, score: seleccion.score, linea, time: ts });
+  if (historial.length > 10) historial = historial.slice(0, 10);
   actualizarHist();
   actualizarStats();
-  document.getElementById('txtDesc').value='';
-  document.getElementById('sugerencias').innerHTML='';
-  limpiar();
+  document.getElementById('txtDesc').value = '';
+  document.getElementById('sugerencias').innerHTML = '';
+  clearSelection();
 }
 
-function actualizarHist(){
-  var el = document.getElementById('historial');
-  if(!historial.length){ el.innerHTML='<div class="info-placeholder" style="padding:1rem;">Sin capturas</div>'; return; }
-  el.innerHTML = historial.map(function(h){
-    return '<div class="hist-item"><div class="hist-code">'+h.cod+'</div><div class="hist-text">"'+h.desc+'" ['+h.linea+']</div><div class="hist-meta">'+h.time+' | '+h.score+'% confianza</div></div>';
-  }).join('');
+function actualizarHist() {
+  const container = document.getElementById('historial');
+  if (!historial.length) {
+    container.innerHTML = '<div class="info-placeholder" style="padding:1rem;">Sin capturas</div>';
+    return;
+  }
+  container.innerHTML = historial.map(h =>
+    `<div class="hist-item">
+       <div class="hist-code">${h.cod}</div>
+       <div class="hist-text">"${h.desc}" [${h.linea}]</div>
+       <div class="hist-meta">${h.time} | ${h.score}% confianza</div>
+     </div>`
+  ).join('');
 }
 
-function actualizarStats(){
+function actualizarStats() {
   document.getElementById('statCount').textContent = historial.length;
-  if(historial.length){
-    document.getElementById('statAvg').textContent = Math.round(historial.reduce(function(a,b){return a+b.score;},0)/historial.length)+'%';
+  if (historial.length) {
+    const avg = Math.round(historial.reduce((acc, h) => acc + h.score, 0) / historial.length);
+    document.getElementById('statAvg').textContent = `${avg}%`;
   }
 }
 </script>
