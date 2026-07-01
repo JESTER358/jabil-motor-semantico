@@ -146,12 +146,12 @@ aside.sidebar {
 <footer>Motor Semantico DEXCOM · Logica SQL lista para integracion con Power Apps · Jabil 2026</footer>
 
 <script>
-// ============ Event Listeners ============
+//event listeners
 document.getElementById('selLinea').addEventListener('change', onLineaChange);
 document.getElementById('txtDesc').addEventListener('input', onDescChange);
 document.getElementById('btnGuardar').addEventListener('click', guardar);
 
-// Event delegation para .match-item
+//event delegation para match-item
 document.addEventListener('click', e => {
   if (e.target.closest('.match-item')) {
     const matchItem = e.target.closest('.match-item');
@@ -506,7 +506,7 @@ const EQS = {
   'ENGTEST':['pruebas ingenieria','ingenieria pruebas','test ingenieria'],
   'COMM':['juntas','comunicacion','reunion','junta personal'],
 
-  // TSA — AX2/AX3 SEG y bloques robot
+  //tsa ax2/ax3 seg y bloques robot
   'AX2 SEG':['guarda seguridad ax2','seguridad ax2','guarda ax2','ax2 safety'],
   'AX3 SEG':['guarda seguridad ax3','seguridad ax3','guarda ax3','ax3 safety'],
   'AX2 SE':['suministro electrico ax2','electrico ax2','ax2 sin luz'],
@@ -542,7 +542,7 @@ const EQS = {
   'BIC LIF':['elevador charolas bic','charolas bic','bic lif'],
   'RAMUP':['entrenamiento personal','personal entrenamiento','ramup'],
   'LIMPMAQ':['limpieza maquina','limpiar maquina','fifo reset'],
-  // Fast Line — SE y EOAT
+  //fast line se y eoat
   'FL AX1 SE':['fl suministro electrico','fl ax1 electrico','ax1 sin luz fl'],
   'FL AX2 SE':['fl ax2 suministro electrico','fl ax2 electrico','ax2 sin luz fl'],
   'FL AX3 SE':['fl ax3 suministro electrico','fl ax3 electrico','ax3 sin luz fl'],
@@ -556,7 +556,7 @@ const EQS = {
   'FL AX3 PAC':['fl pallets ax3','ax3 pallet fl','fl ax3 pallet atorado'],
   'FL AX2 RFT':['fl rft','rft fl','fl ax2 prueba rft'],
   'FSER':['falla servidor','servidor caido','server error','servidor falla'],
-  // DSD05
+  //dsd05
   'M2 St14':['vision check cannula','vision check aguja','m2 st14 vision'],
   'M6 St05':['parche m6','transferencia parche m6','m6 parche'],
   'M6 St11':['parche st11','transferencia parche st11'],
@@ -571,7 +571,7 @@ const EQS = {
 
 };
 
-// Constantes de scoring — evita numeros magicos dispersos en el codigo
+//constantes scoring sin numeros magicos
 const SCORE_EQ_BASE    = 0.5;
 const SCORE_EQ_PER_WORD = 0.15;
 const SCORE_EQ_MAX     = 0.95;
@@ -582,7 +582,7 @@ const SCORE_DESC_SUBSTR = 0.5;
 const SCORE_CODE_SUBSTR = 0.6;
 const SCORE_THRESHOLD  = 0.3;
 
-// Convierte un score numerico (0–100) al nivel de confianza visual
+//convierte score numerico (0-100) al nivel confianza visual
 function getConfidenceLevel(score) {
   return score >= 85 ? 'high' : score >= 60 ? 'med' : 'low';
 }
@@ -611,26 +611,26 @@ function buscar(input, linea) {
     let score = 0;
     const eqs = EQS[codeEntry.cod] || [];
 
-    // Estrategia 1: match exacto de equivalencias (100%)
-    if (eqs.some(eq => eq === input)) {
-      score = 1.0;
-    } else {
-      const inputWords = input.split(' ');
-
-      // Estrategia 2: match parcial por palabras en equivalencias
-      let bestEqScore = 0;
-      eqs.forEach(eq => {
-        const eqWords = eq.split(' ');
-        const matchedWords = inputWords.filter(w => eqWords.some(e => e.includes(w)));
-        if (matchedWords.length > 0) {
-          bestEqScore = Math.max(
-            bestEqScore,
-            Math.min(SCORE_EQ_BASE + matchedWords.length * SCORE_EQ_PER_WORD, SCORE_EQ_MAX)
-          );
-        }
-      });
-
-      // Estrategia 3: match por descripcion y codigo
+    //estrategia1: match exacto equivalencias (100%)
+     if (eqs.some(eq => eq === input)) {
+       score = 1.0;
+     } else {
+       const inputWords = input.split(' ');
+ 
+       //estrategia2: match parcial por palabras en equivalencias
+       let bestEqScore = 0;
+       eqs.forEach(eq => {
+         const eqWords = eq.split(' ');
+         const matchedWords = inputWords.filter(w => eqWords.some(e => e.includes(w)));
+         if (matchedWords.length > 0) {
+           bestEqScore = Math.max(
+             bestEqScore,
+             Math.min(SCORE_EQ_BASE + matchedWords.length * SCORE_EQ_PER_WORD, SCORE_EQ_MAX)
+           );
+         }
+       });
+ 
+       //estrategia3: match por descripcion y codigo
       const desc = codeEntry.desc.toLowerCase();
       const descWords = desc.split(' ');
       const descMatches = inputWords.filter(w => descWords.some(d => d.includes(w)));
