@@ -1,17 +1,17 @@
 -- ============================================================
--- MOTOR SEMANTICO DEXCOM -- Estandarizacion de Codigos de Downtime
--- Jabil Tijuana | Lineas: 1=Fast Line, 2=TSA, 3=DSD05
--- SQL Server 2016+ compatible
+-- motor semantico dexcom estandarizacion de codigos de downtime
+-- jabil tijuana | lineas: 1=fast line, 2=tsa, 3=dsd05
+-- sql server 2016+ compatible
 -- ============================================================
--- IMPORTANTE: La fuente de verdad es codigos_historial.
--- Esa tabla es plana -- no hay JOINs a tbl_codigo_falla
--- ni a tbl_equivalencias desde aca. El motor busca directo
+-- importante: la fuente de verdad es codigos_historial.
+-- esa tabla es plana no hay joins a tbl_codigo_falla
+-- ni a tbl_equivalencias desde aca. el motor busca directo
 -- sobre descripcion con 3 niveles de confianza.
 -- ============================================================
 
 
 -- ============================================================
--- SECCION 1: SP PRINCIPAL
+-- seccion 1: sp principal
 -- ============================================================
 
 IF OBJECT_ID('dbo.sp_estandarizar_downtime', 'P') IS NOT NULL
@@ -26,19 +26,19 @@ BEGIN
     SET NOCOUNT ON;
 
     -- --------------------------------------------------------
-    -- Limpieza basica de la entrada antes de buscar.
-    -- LOWER + TRIM para que "  Sensor Roto  " matchee igual
-    -- que "sensor roto". Sin esto el operador tiene que ser
+    -- limpieza basica de la entrada antes de buscar.
+    -- lower + trim para que "  sensor roto  " matchee igual
+    -- que "sensor roto". sin esto el operador tiene que ser
     -- perfecto al tipear y eso nunca pasa en piso.
     -- --------------------------------------------------------
     DECLARE @desc_limpia VARCHAR(255);
     SET @desc_limpia = LOWER(LTRIM(RTRIM(@descripcion)));
 
     -- --------------------------------------------------------
-    -- Tabla temporal para acumular candidatos de las 3 
-    -- estrategias y despues devolver el TOP 3 consolidado.
-    -- Usar tabla temp en lugar de multiples SELECT + RETURN
-    -- porque Power Apps necesita un solo resultset limpio.
+    -- tabla temporal para acumular candidatos de las 3 
+    -- estrategias y despues devolver el top 3 consolidado.
+    -- usar tabla temp en lugar de multiples select + return
+    -- porque power apps necesita un solo resultset limpio.
     -- --------------------------------------------------------
     CREATE TABLE #candidatos (
         codigo          VARCHAR(50),
@@ -49,10 +49,10 @@ BEGIN
     );
 
     -- --------------------------------------------------------
-    -- ESTRATEGIA 1: Coincidencia exacta (confianza 100%)
-    -- La descripcion del operador es identica (en minusculas)
+    -- estrategia 1: coincidencia exacta (confianza 100%)
+    -- la descripcion del operador es identica (en minusculas)
     -- a la descripcion registrada en el historico.
-    -- Caso tipico: el operador copio el nombre del codigo.
+    -- caso tipico: el operador copio el nombre del codigo.
     -- --------------------------------------------------------
     INSERT INTO #candidatos (codigo, descripcion, modulo, confianza_pct, metodo)
     SELECT TOP 3
@@ -67,16 +67,16 @@ BEGIN
     ORDER BY id_historial;
 
     -- --------------------------------------------------------
-    -- ESTRATEGIA 2: Coincidencia por palabras (confianza 75%)
-    -- Divide la entrada del operador por espacios y busca cada
+    -- estrategia 2: coincidencia por palabras (confianza 75%)
+    -- divide la entrada del operador por espacios y busca cada
     -- palabra en la columna descripcion por separado.
-    -- Util cuando el operador escribe "canula atorada" pero el
-    -- codigo dice "atoramiento en canula" -- las palabras clave
+    -- util cuando el operador escribe "canula atorada" pero el
+    -- codigo dice "atoramiento en canula" las palabras clave
     -- estan ahi aunque el orden o la forma morfologica difieran.
     --
-    -- Implementacion sin CLR ni FTS: STRING_SPLIT (SQL 2016+)
-    -- con LIKE por cada token. Si cualquier palabra matchea,
-    -- el registro califica. Filtramos tokens de 1 caracter
+    -- implementacion sin clr ni fts: string_split (sql 2016+)
+    -- con like por cada token. si cualquier palabra matchea,
+    -- el registro califica. filtramos tokens de 1 caracter
     -- porque "y", "a", "e" son ruido puro.
     -- --------------------------------------------------------
     INSERT INTO #candidatos (codigo, descripcion, modulo, confianza_pct, metodo)
@@ -91,20 +91,20 @@ BEGIN
            ON LEN(TRIM(tokens.value)) > 1
           AND LOWER(ch.descripcion) LIKE '%' + TRIM(tokens.value) + '%'
     WHERE ch.linea_id = @linea_id
-      -- Excluir los que ya subieron por EXACTA para no duplicar
-      AND NOT EXISTS (
-            SELECT 1 FROM #candidatos c
-            WHERE c.codigo = ch.codigo
-      )
+       -- excluir los que ya subieron por exacta para no duplicar
+       AND NOT EXISTS (
+             SELECT 1 FROM #candidatos c
+             WHERE c.codigo = ch.codigo
+       )
     ORDER BY ch.id_historial;
 
     -- --------------------------------------------------------
-    -- ESTRATEGIA 3: Fuzzy con subcadena completa (confianza 50%)
-    -- Busca la descripcion limpia completa como substring
-    -- dentro del campo descripcion. Menos preciso que PARCIAL
+    -- estrategia 3: fuzzy con subcadena completa (confianza 50%)
+    -- busca la descripcion limpia completa como substring
+    -- dentro del campo descripcion. menos preciso que parcial
     -- pero captura casos donde el operador escribe una frase
     -- que esta contenida en la descripcion oficial.
-    -- Es la red de seguridad -- llega aqui lo que no matcheo
+    -- es la red de seguridad llega aqui lo que no matcheo
     -- con exacta ni con keywords individuales.
     -- --------------------------------------------------------
     INSERT INTO #candidatos (codigo, descripcion, modulo, confianza_pct, metodo)
@@ -117,14 +117,14 @@ BEGIN
     FROM codigos_historial
     WHERE linea_id = @linea_id
       AND LOWER(descripcion) LIKE '%' + @desc_limpia + '%'
-      -- Solo los que no subieron en ninguna estrategia anterior
-      AND codigo NOT IN (SELECT codigo FROM #candidatos)
+       -- solo los que no subieron en ninguna estrategia anterior
+       AND codigo NOT IN (SELECT codigo FROM #candidatos)
     ORDER BY id_historial;
 
     -- --------------------------------------------------------
-    -- Devolver el TOP 3 global ordenado por confianza desc.
-    -- Si no hay nada, el SELECT devuelve 0 filas -- Power Apps
-    -- puede manejar eso mas limpio que una fila con NULLs.
+    -- devolver el top 3 global ordenado por confianza desc.
+    -- si no hay nada, el select devuelve 0 filas power apps
+    -- puede manejar eso mas limpio que una fila con nulls.
     -- --------------------------------------------------------
     SELECT TOP 3
         codigo,
@@ -141,10 +141,10 @@ GO
 
 
 -- ============================================================
--- SECCION 2: VISTA DE REFERENCIA
--- Para que el equipo pueda consultar el catalogo completo
+-- seccion 2: vista de referencia
+-- para que el equipo pueda consultar el catalogo completo
 -- sin tener que recordar los id_linea de memoria.
--- Util tambien para depurar cuando el motor no matchea.
+-- util tambien para depurar cuando el motor no matchea.
 -- ============================================================
 
 IF OBJECT_ID('dbo.v_referencia_dexcom', 'V') IS NOT NULL
@@ -153,7 +153,7 @@ GO
 
 CREATE VIEW dbo.v_referencia_dexcom AS
 SELECT
-    -- Nombre legible de la linea en lugar del id numerico
+    -- nombre legible de la linea en lugar del id numerico
     CASE linea_id
         WHEN 1 THEN 'Fast Line'
         WHEN 2 THEN 'TSA'
@@ -170,43 +170,43 @@ GO
 
 
 -- ============================================================
--- SECCION 3: CASOS DE PRUEBA
--- Ejecutar despues de poblar codigos_historial.
--- El id_linea va como INT directo -- no mas lookup por nombre.
+-- seccion 3: casos de prueba
+-- ejecutar despues de poblar codigos_historial.
+-- el id_linea va como int directo no mas lookup por nombre.
 -- ============================================================
 
--- Prueba 1: Atoramiento en canula -- DSD05 (id=3)
--- Esperado: match por EXACTA o PARCIAL sobre "atoramiento" o "canula"
+-- prueba 1: atoramiento en canula dsd05 (id=3)
+-- esperado: match por exacta o parcial sobre "atoramiento" o "canula"
 EXEC dbo.sp_estandarizar_downtime
     @descripcion = 'atoramiento canula',
     @linea_id    = 3;
 
--- Prueba 2: Sensor roto -- Fast Line (id=1)
--- Esperado: match EXACTA si "sensor roto" esta textual, sino PARCIAL
+-- prueba 2: sensor roto fast line (id=1)
+-- esperado: match exacta si "sensor roto" esta textual, sino parcial
 EXEC dbo.sp_estandarizar_downtime
     @descripcion = 'sensor roto',
     @linea_id    = 1;
 
--- Prueba 3: Elevador sin movimiento -- TSA (id=2)
--- El operador no usa la palabra exacta del codigo, confia en PARCIAL
+-- prueba 3: elevador sin movimiento tsa (id=2)
+-- el operador no usa la palabra exacta del codigo, confia en parcial
 EXEC dbo.sp_estandarizar_downtime
     @descripcion = 'elevador no sube',
     @linea_id    = 2;
 
--- Prueba 4: Bowl feeder con alarma -- TSA (id=2)
--- "bowlfeeder" puede variar ("bowl feeder", "bowl-feeder") -- FUZZY lo captura
+-- prueba 4: bowl feeder con alarma tsa (id=2)
+-- "bowlfeeder" puede variar ("bowl feeder", "bowl-feeder") fuzzy lo captura
 EXEC dbo.sp_estandarizar_downtime
     @descripcion = 'bowlfeeder alarma',
     @linea_id    = 2;
 
--- Prueba 5: Falta de material -- DSD05 (id=3)
--- Frase corta y directa, deberia matchear EXACTA
+-- prueba 5: falta de material dsd05 (id=3)
+-- frase corta y directa, deberia matchear exacta
 EXEC dbo.sp_estandarizar_downtime
     @descripcion = 'falta material',
     @linea_id    = 3;
 
--- Prueba 6: Conveyor detenido -- Fast Line (id=1)
--- "parado" vs "detenido" -- PARCIAL por "conveyor", FUZZY si no
+-- prueba 6: conveyor detenido fast line (id=1)
+-- "parado" vs "detenido" parcial por "conveyor", fuzzy si no
 EXEC dbo.sp_estandarizar_downtime
     @descripcion = 'conveyor parado',
     @linea_id    = 1;
