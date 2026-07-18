@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motor Semantico - STRIKER | Jabil Tijuana</title>
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --navy:    #002C49;
+  --navy-dk: #001a2e;
+  --navy-lt: #003a5c;
+  --blue:    #6098B0;
+  --blue-lt: #7ab1c8;
+  --bg:      #0d1a26;
+  --card:    #132433;
+  --card-hl: #1a2d40;
+  --border:  #1e3a52;
+  --text:    #c8d6e0;
+  --text-muted: #6a8a9a;
+  --font:    'Segoe UI', system-ui, -apple-system, sans-serif;
+  --success: #2ecc71;
+  --warn:    #f39c12;
+  --danger:  #e74c3c;
+}
+html,body{height:100%;}
+body{font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg);display:flex;flex-direction:column;min-height:100vh;}
+.site-header{background:var(--navy);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);position:sticky;top:0;z-index:100;}
+.header-inner{display:flex;align-items:center;gap:16px;padding:10px 28px;max-width:1440px;margin:0 auto;width:100%;border-bottom:2px solid var(--navy-lt);}
+.header-titles{flex:1;}
+.header-titles h1{font-size:18px;font-weight:700;letter-spacing:0.02em;line-height:1.2;color:#fff;}
+.header-titles p{font-size:11px;color:var(--blue-lt);margin-top:2px;text-transform:uppercase;letter-spacing:0.04em;}
+main{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;padding:1.5rem;max-width:1440px;margin:0 auto;width:100%;flex:1;overflow-y:auto;}
+@media(max-width:1024px){main{grid-template-columns:1fr;}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.3rem;box-shadow:0 2px 12px rgba(0,0,0,0.2);}
+.panel-title{font-size:0.75rem;font-weight:600;color:var(--blue);margin-bottom:0.9rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.5px;}
+.form-group{margin-bottom:1.1rem;}
+label{display:block;font-size:0.72rem;font-weight:500;color:var(--text-muted);margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.3px;}
+select,input,textarea{width:100%;padding:0.6rem 0.8rem;border:1px solid var(--border);border-radius:5px;background:var(--navy-dk);color:var(--text);font-size:0.9rem;font-family:inherit;transition:border-color 0.15s ease-out,box-shadow 0.15s ease-out,background-color 0.15s ease-out;}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(96,152,176,0.15);}
+select option{background:var(--navy);color:var(--text);}
+button{width:100%;padding:0.65rem 1.2rem;background:linear-gradient(135deg,var(--blue) 0%,var(--navy-lt) 100%);color:#fff;border:none;border-radius:5px;font-weight:600;cursor:pointer;transition:all 0.2s;font-size:0.88rem;}
+button:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(96,152,176,0.25);}
+button:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.match-item{background:var(--navy-dk);border:1px solid var(--border);border-radius:5px;padding:0.8rem;margin-bottom:0.5rem;cursor:pointer;transition:background-color 0.15s ease-out,border-color 0.15s ease-out;}
+.match-item:hover{background:var(--card-hl);border-color:var(--blue);}
+.match-item.selected{background:var(--blue);border-color:var(--blue);}
+.match-code{font-weight:600;color:var(--blue);font-family:monospace;font-size:1.05rem;}
+.match-item.selected .match-code{color:#fff;}
+.match-causa{font-size:0.82rem;color:var(--text);margin-top:0.2rem;}
+.match-item.selected .match-causa{color:#fff;}
+.match-accion{font-size:0.76rem;color:var(--text-muted);margin-top:0.15rem;}
+.match-accion.pendiente{opacity:0.55;font-style:italic;}
+.match-item.selected .match-accion{color:#e0e8f0;}
+.match-meta{font-size:0.7rem;color:var(--text-muted);margin-top:0.25rem;text-transform:uppercase;letter-spacing:0.3px;}
+.match-item.selected .match-meta{color:#e0e8f0;}
+.match-conf{font-size:0.72rem;margin-top:0.15rem;}
+.match-item.selected .match-conf{color:#e0e8f0;}
+.info-box{background:var(--navy-dk);border-radius:5px;padding:1rem;min-height:80px;display:flex;flex-direction:column;justify-content:center;}
+.info-code{font-size:1.4rem;font-weight:600;color:var(--blue);font-family:monospace;}
+.info-desc{color:var(--text-muted);font-size:0.85rem;margin-top:0.3rem;}
+.info-conf{font-size:0.8rem;margin-top:0.3rem;}
+.conf-high{color:var(--success);}
+.conf-med{color:var(--warn);}
+.conf-low{color:var(--danger);}
+.info-placeholder{color:var(--text-muted);font-size:0.85rem;text-align:center;}
+.hist-item{background:var(--navy-dk);border-left:3px solid var(--blue);padding:0.55rem 0.7rem;margin-bottom:0.45rem;border-radius:2px;font-size:0.85rem;}
+.hist-code{font-weight:600;color:var(--blue);font-family:monospace;font-size:0.9rem;}
+.hist-text{color:var(--text-muted);font-size:0.78rem;margin-top:0.1rem;}
+.hist-meta{color:var(--text-muted);font-size:0.68rem;margin-top:0.1rem;opacity:0.7;}
+footer{text-align:center;padding:0.7rem 2rem;font-size:0.7rem;color:var(--text-muted);border-top:1px solid var(--border);opacity:0.7;}
+.header-client{text-align:right;}
+aside.sidebar{display:flex;flex-direction:column;gap:1rem;}
+.panel-section{margin-top:1.5rem;}
+.suggestions-container{min-height:70px;}
+.info-selected{padding:1.5rem;}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-titles">
+      <h1>MOTOR SEMANTICO STRIKER</h1>
+      <p>Estandarizacion de Codigos de Falla | Jabil Tijuana</p>
+    </div>
+    <div class="header-titles header-client">
+      <p>Cliente</p>
+      <h1 style="font-size:14px;">STRIKER</h1>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="panel">
+    <div class="panel-title">Filtros</div>
+
+    <div class="form-group">
+      <label>Modulo</label>
+      <select id="selModulo">
+        <option value="">TODOS LOS MODULOS</option>
+        <option value="INDEX">INDEX</option>
+        <option value="ROBOT DE CAP">ROBOT DE CAP</option>
+        <option value="ROBOT DE HAUSING Y BASKET">ROBOT DE HAUSING Y BASKET</option>
+        <option value="CONVEYOR">CONVEYOR</option>
+        <option value="NAUTILUS">NAUTILUS</option>
+        <option value="BRANSON">BRANSON</option>
+      </select>
+    </div>
+
+    <div class="panel-title panel-section">Descripcion del Error</div>
+
+    <div class="form-group">
+      <label>Describe lo que observaste</label>
+      <input type="text" id="txtDesc" placeholder="Ej: atoramiento en nido, fuga en estacion 2, sensor dañado">
+    </div>
+
+    <div class="panel-title panel-section">Sugerencias</div>
+    <div id="sugerencias" class="suggestions-container"></div>
+
+    <button class="panel-section" id="btnGuardar" disabled>Guardar</button>
+  </div>
+
+  <aside class="sidebar">
+    <div class="panel">
+      <div class="panel-title">Codigo Seleccionado</div>
+      <div id="infoBox" class="info-placeholder info-selected">Selecciona una sugerencia</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Historial</div>
+      <div id="historial" style="max-height:280px;overflow-y:auto;">
+        <div class="info-placeholder" style="padding:1rem;">Sin capturas</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer>Motor Semantico STRIKER · 43 codigos de falla · 6 modulos · Jabil 2026</footer>
+
+<script>
+const DATOS = {
+  "INDEX":[
+    {"codigo":"ND ATORAMIENTOS","causa":"Atoramientos en nidos: ND ATORAMIENTOS","accion":"","modo":"INDEX"},
+    {"codigo":"ND FUGA","causa":"Fuga en mismo nido en estacion#2,3: ND FUGA","accion":"","modo":"INDEX"},
+    {"codigo":"ST2 FUGAS","causa":"Fuga en estacion #3: ST2 FUGAS","accion":"","modo":"INDEX"},
+    {"codigo":"ST2 FXT","causa":"Fixtura dañada: ST2 FXT","accion":"","modo":"INDEX"},
+    {"codigo":"ST2 MECANISMO","causa":"Sensor Dañado,cilindro dañado o sensor en no pocision: ST2 MECANISMO","accion":"","modo":"INDEX"},
+    {"codigo":"ST3 FUGAS","causa":"Exceso de Fugas: ST3 FUGAS","accion":"","modo":"INDEX"},
+    {"codigo":"ST3 MECANISMO","causa":"Sensor Dañado,cilindro dañado o sensor en no pocision: ST3 MECANISMO","accion":"","modo":"INDEX"},
+    {"codigo":"SV4 RECHAZOS","causa":"Maquina lenta por que tarda en dectectar componentes DRV,HOUSING,BASKET Y WELD-RING: SV4 RECHAZOS","accion":"","modo":"INDEX"},
+    {"codigo":"SV4 PROBLEMAS CON GOLDEN SAMPLE","causa":"No detecta en liberacion o pasa como buenas las golden sample de liberacion de calidad: SV4 PROBLEMAS CON GOLDEN SAMPLE","accion":"","modo":"INDEX"},
+    {"codigo":"ST5 RECHAZOS","causa":"Rechazos por DRV tapado: ST5 RECHAZOS","accion":"","modo":"INDEX"},
+    {"codigo":"ST5 MECANISMO","causa":"Sensor Dañado,cilindro dañado o sensor en no pocision: ST5 MECANISMO","accion":"","modo":"INDEX"},
+    {"codigo":"ST6 P&P MECANISMO","causa":"Sensor Dañado,cilindro dañado,servo driver dañado y sensor en no pocision: ST6 P&P MECANISMO","accion":"","modo":"INDEX"},
+    {"codigo":"ST6 P&P ATORAMIENTOS","causa":"Atoramientos en nidos de index: ST6 P&P ATORAMIENTOS.","accion":"","modo":"INDEX"}
+  ],
+  "ROBOT DE CAP":[
+    {"codigo":"CAP FDR","causa":"Atoramientos,no avanza el cap: CAP FDR","accion":"","modo":"ROBOT DE CAP"},
+    {"codigo":"SV RBT","causa":"No pasa golden sample de calidad y rechazos de cap: SV RBT","accion":"","modo":"ROBOT DE CAP"},
+    {"codigo":"CAP RBT","causa":"Colision de robot,sensor dañado,gripper dañado o cualquier componente dañado: CAP RBT","accion":"","modo":"ROBOT DE CAP"}
+  ],
+  "ROBOT DE HAUSING Y BASKET":[
+    {"codigo":"BSKT FDR","causa":"Atoramientos,no avanza el basket en riel de feeder: BSKT FDR","accion":"","modo":"ROBOT DE HAUSING Y BASKET"},
+    {"codigo":"HSG FDR","causa":"Atoramientos,no avanza el Housing en riel de feeder: HSG FDR","accion":"","modo":"ROBOT DE HAUSING Y BASKET"},
+    {"codigo":"HSG RBT","causa":"Colision de robot,sensor dañado,gripper dañado o cualquier componente dañado:HSG RBT","accion":"","modo":"ROBOT DE HAUSING Y BASKET"},
+    {"codigo":"RZO RBT","causa":"Rechazos por componentes DRV,HOUSING,BASKET Y WELD-RING: RZO RBT","accion":"","modo":"ROBOT DE HAUSING Y BASKET"}
+  ],
+  "CONVEYOR":[
+    {"codigo":"ND CONVEYOR","causa":"Pieza mal colocada en mismo nido: ND CONVEYOR","accion":"","modo":"CONVEYOR"},
+    {"codigo":"ST8 MECANISMO","causa":"Sensor Dañado,cilindro dañado o sensor en no pocision: ST8 MECANISMO","accion":"","modo":"CONVEYOR"},
+    {"codigo":"ST9 RECHAZOS","causa":"Rechazos por etiqueta RFID en mala condicion: ST9 RECHAZOS","accion":"","modo":"CONVEYOR"},
+    {"codigo":"ST9 MECANISMO","causa":"Sensor Dañado,cilindro dañado o sensor en no pocision:ST9 MECANISMO","accion":"","modo":"CONVEYOR"},
+    {"codigo":"ST10 IMPRESIÓN","causa":"Grabado incompleto, fecha,lote o referencia mal colocada al momento de un cambio de orden o modelo: ST10 IMPRESIÓN","accion":"","modo":"CONVEYOR"},
+    {"codigo":"ST10 MECANISMO","causa":"Sensor Dañado,cilindro dañado o sensor en no pocision:ST10 MECANISMO","accion":"","modo":"CONVEYOR"},
+    {"codigo":"ST11 RECHAZOS","causa":"Rechazos por etiqueta desalineada: ST11 RECHAZOS","accion":"","modo":"CONVEYOR"},
+    {"codigo":"ST11 MECANISMO","causa":"Sistema de vision en no pocision: ST11 MECANISMO","accion":"","modo":"CONVEYOR"},
+    {"codigo":"ST12 MECANISMO","causa":"Sensor Dañado,cilindro dañado o sensor en no pocision: ST12 MECANISMO","accion":"","modo":"CONVEYOR"}
+  ],
+  "NAUTILUS":[
+    {"codigo":"RFID IMPRESIÓN","causa":"Oportunidad en la Impresión de etiqueta por ejemplo inclinada hacia un costado: RFID IMPRESIÓN","accion":"","modo":"NAUTILUS"},
+    {"codigo":"RFID X","causa":"Exceso de etiqueta con X el equipo se alarma: RFID X","accion":"","modo":"NAUTILUS"},
+    {"codigo":"RFID EMPALME","causa":"Se rompe rollo por union debil: RFID EMPALME","accion":"","modo":"NAUTILUS"},
+    {"codigo":"RFID ATORAMIENTOS EN RODILLOS","causa":"Atoramientos en mecanismo interno de etiquetaRFID  es necesario desarmar: RFID ATORAMIENTOS EN RODILLOS","accion":"","modo":"NAUTILUS"},
+    {"codigo":"RFID ALARMAS","causa":"Alarmas en equipo: RFID ALARMAS","accion":"","modo":"NAUTILUS"},
+    {"codigo":"RFID COMPONENTE DAÑADO","causa":"Remplazo de servomotor,remplazo de pad de cabezal de aplicador de etiqueta,remplazo de cable de comunicación o cualquier componente del equipo: RFID COMPONENTE DAÑADO","accion":"","modo":"NAUTILUS"}
+  ],
+  "BRANSON":[
+    {"codigo":"BSN P&P1 ATORAMIENTOS","causa":"Atoramiento en nido de index: BSN P&P1 ATORAMIENTOS","accion":"","modo":"BRANSON"},
+    {"codigo":"BSN P&P1 MECANISMO","causa":"Sensor Dañado,cilindro dañado,servo driver dañado y sensor en no pocision: BSN P&P1 MECANISMO","accion":"","modo":"BRANSON"},
+    {"codigo":"BSN P&P2 RECHAZOS","causa":"Rechazos por un alarma en sistema de sellado laser: BSN P&P2 RECHAZOS","accion":"","modo":"BRANSON"},
+    {"codigo":"BSN P&P2 MECANISMO","causa":"Sensor Dañado,cilindro dañado,servo driver dañado y sensor en no pocision: BSN P&P2 MECANISMO","accion":"","modo":"BRANSON"},
+    {"codigo":"BSN INDEX","causa":"No avanza index,motor dañado: BSN INDEX","accion":"","modo":"BRANSON"},
+    {"codigo":"BSN ALARMAS","causa":"Alarmas en equipo: BSN ALARMAS","accion":"","modo":"BRANSON"},
+    {"codigo":"BSN SELLADO PARCIAL","causa":"Scrap por sellado parcial: BSN SELLADO PARCIAL","accion":"","modo":"BRANSON"},
+    {"codigo":"BSN SOBRESELLADO","causa":"Scrap por sobresellado: BSN SOBRESELLADO","accion":"","modo":"BRANSON"}
+  ]
+};
+
+const EQS = {
+  "ND ATORAMIENTOS":["nd atoramientos","falla nd atoramientos","error nd atoramientos","atoramientos nidos atoramientos","problema nd","falla en nd","index nd atoramientos"],
+  "ND FUGA":["nd fuga","falla nd fuga","error nd fuga","fuga mismo nido estacion#2 fuga","problema nd","falla en nd","index nd fuga"],
+  "ST2 FUGAS":["st2 fugas","falla st2 fugas","error st2 fugas","fuga estacion st2 fugas","problema st2","falla en st2","index st2 fugas"],
+  "ST2 FXT":["st2 fxt","falla st2 fxt","error st2 fxt","fixtura dañada st2 fxt","problema st2","falla en st2","index st2 fxt"],
+  "ST2 MECANISMO":["st2 mecanismo","falla st2 mecanismo","error st2 mecanismo","sensor dañado cilindro dañado sensor","problema st2","falla en st2","index st2 mecanismo"],
+  "ST3 FUGAS":["st3 fugas","falla st3 fugas","error st3 fugas","exceso fugas st3 fugas","problema st3","falla en st3","index st3 fugas"],
+  "ST3 MECANISMO":["st3 mecanismo","falla st3 mecanismo","error st3 mecanismo","sensor dañado cilindro dañado sensor","problema st3","falla en st3","index st3 mecanismo"],
+  "SV4 RECHAZOS":["sv4 rechazos","falla sv4 rechazos","error sv4 rechazos","maquina lenta por que tarda","problema sv4","falla en sv4","index sv4 rechazos"],
+  "SV4 PROBLEMAS CON GOLDEN SAMPLE":["sv4 problemas con golden sample","falla sv4 problemas con golden sample","error sv4 problemas con golden sample","detecta liberacion pasa como buenas","problema sv4","falla en sv4","index sv4 problemas con golden sample"],
+  "ST5 RECHAZOS":["st5 rechazos","falla st5 rechazos","error st5 rechazos","rechazos por drv tapado st5","problema st5","falla en st5","index st5 rechazos"],
+  "ST5 MECANISMO":["st5 mecanismo","falla st5 mecanismo","error st5 mecanismo","sensor dañado cilindro dañado sensor","problema st5","falla en st5","index st5 mecanismo"],
+  "ST6 P&P MECANISMO":["st6 p&p mecanismo","falla st6 p&p mecanismo","error st6 p&p mecanismo","sensor dañado cilindro dañado servo","problema st6","falla en st6","index st6 p&p mecanismo"],
+  "ST6 P&P ATORAMIENTOS":["st6 p&p atoramientos","falla st6 p&p atoramientos","error st6 p&p atoramientos","atoramientos nidos index st6 p&p","problema st6","falla en st6","index st6 p&p atoramientos"],
+  "CAP FDR":["cap fdr","falla cap fdr","error cap fdr","atoramientos avanza cap cap fdr","problema cap","falla en cap","robot de cap fdr"],
+  "SV RBT":["sv rbt","falla sv rbt","error sv rbt","pasa golden sample calidad rechazos","problema sv","falla en sv","robot de sv rbt"],
+  "CAP RBT":["cap rbt","falla cap rbt","error cap rbt","colision robot sensor dañado gripper","problema cap","falla en cap","robot de cap rbt"],
+  "BSKT FDR":["bskt fdr","falla bskt fdr","error bskt fdr","atoramientos avanza basket riel feeder","problema bskt","falla en bskt","robot de bskt fdr"],
+  "HSG FDR":["hsg fdr","falla hsg fdr","error hsg fdr","atoramientos avanza housing riel feeder","problema hsg","falla en hsg","robot de hsg fdr"],
+  "HSG RBT":["hsg rbt","falla hsg rbt","error hsg rbt","colision robot sensor dañado gripper","problema hsg","falla en hsg","robot de hsg rbt"],
+  "RZO RBT":["rzo rbt","falla rzo rbt","error rzo rbt","rechazos por componentes drv housing","problema rzo","falla en rzo","robot de rzo rbt"],
+  "ND CONVEYOR":["nd conveyor","falla nd conveyor","error nd conveyor","pieza mal colocada mismo nido","problema nd","falla en nd","conveyor nd conveyor"],
+  "ST8 MECANISMO":["st8 mecanismo","falla st8 mecanismo","error st8 mecanismo","sensor dañado cilindro dañado sensor","problema st8","falla en st8","conveyor st8 mecanismo"],
+  "ST9 RECHAZOS":["st9 rechazos","falla st9 rechazos","error st9 rechazos","rechazos por etiqueta rfid mala","problema st9","falla en st9","conveyor st9 rechazos"],
+  "ST9 MECANISMO":["st9 mecanismo","falla st9 mecanismo","error st9 mecanismo","sensor dañado cilindro dañado sensor","problema st9","falla en st9","conveyor st9 mecanismo"],
+  "ST10 IMPRESIÓN":["st10 impresión","falla st10 impresión","error st10 impresión","grabado incompleto fecha lote referencia","problema st10","falla en st10","conveyor st10 impresión"],
+  "ST10 MECANISMO":["st10 mecanismo","falla st10 mecanismo","error st10 mecanismo","sensor dañado cilindro dañado sensor","problema st10","falla en st10","conveyor st10 mecanismo"],
+  "ST11 RECHAZOS":["st11 rechazos","falla st11 rechazos","error st11 rechazos","rechazos por etiqueta desalineada st11","problema st11","falla en st11","conveyor st11 rechazos"],
+  "ST11 MECANISMO":["st11 mecanismo","falla st11 mecanismo","error st11 mecanismo","sistema vision pocision st11 mecanismo","problema st11","falla en st11","conveyor st11 mecanismo"],
+  "ST12 MECANISMO":["st12 mecanismo","falla st12 mecanismo","error st12 mecanismo","sensor dañado cilindro dañado sensor","problema st12","falla en st12","conveyor st12 mecanismo"],
+  "RFID IMPRESIÓN":["rfid impresión","falla rfid impresión","error rfid impresión","oportunidad impresión etiqueta por ejemplo","problema rfid","falla en rfid","nautilus rfid impresión"],
+  "RFID X":["rfid x","falla rfid x","error rfid x","exceso etiqueta con equipo alarma","problema rfid","falla en rfid","nautilus rfid x"],
+  "RFID EMPALME":["rfid empalme","falla rfid empalme","error rfid empalme","rompe rollo por union debil","problema rfid","falla en rfid","nautilus rfid empalme"],
+  "RFID ATORAMIENTOS EN RODILLOS":["rfid atoramientos en rodillos","falla rfid atoramientos en rodillos","error rfid atoramientos en rodillos","atoramientos mecanismo interno etiquetarfid necesario","problema rfid","falla en rfid","nautilus rfid atoramientos en rodillos"],
+  "RFID ALARMAS":["rfid alarmas","falla rfid alarmas","error rfid alarmas","alarmas equipo rfid alarmas","problema rfid","falla en rfid","nautilus rfid alarmas"],
+  "RFID COMPONENTE DAÑADO":["rfid componente dañado","falla rfid componente dañado","error rfid componente dañado","remplazo servomotor remplazo pad cabezal","problema rfid","falla en rfid","nautilus rfid componente dañado"],
+  "BSN P&P1 ATORAMIENTOS":["bsn p&p1 atoramientos","falla bsn p&p1 atoramientos","error bsn p&p1 atoramientos","atoramiento nido index bsn p&p1","problema bsn","falla en bsn","branson bsn p&p1 atoramientos"],
+  "BSN P&P1 MECANISMO":["bsn p&p1 mecanismo","falla bsn p&p1 mecanismo","error bsn p&p1 mecanismo","sensor dañado cilindro dañado servo","problema bsn","falla en bsn","branson bsn p&p1 mecanismo"],
+  "BSN P&P2 RECHAZOS":["bsn p&p2 rechazos","falla bsn p&p2 rechazos","error bsn p&p2 rechazos","rechazos por alarma sistema sellado","problema bsn","falla en bsn","branson bsn p&p2 rechazos"],
+  "BSN P&P2 MECANISMO":["bsn p&p2 mecanismo","falla bsn p&p2 mecanismo","error bsn p&p2 mecanismo","sensor dañado cilindro dañado servo","problema bsn","falla en bsn","branson bsn p&p2 mecanismo"],
+  "BSN INDEX":["bsn index","falla bsn index","error bsn index","avanza index motor dañado bsn","problema bsn","falla en bsn","branson bsn index"],
+  "BSN ALARMAS":["bsn alarmas","falla bsn alarmas","error bsn alarmas","alarmas equipo bsn alarmas","problema bsn","falla en bsn","branson bsn alarmas"],
+  "BSN SELLADO PARCIAL":["bsn sellado parcial","falla bsn sellado parcial","error bsn sellado parcial","scrap por sellado parcial bsn","problema bsn","falla en bsn","branson bsn sellado parcial"],
+  "BSN SOBRESELLADO":["bsn sobresellado","falla bsn sobresellado","error bsn sobresellado","scrap por sobresellado bsn sobresellado","problema bsn","falla en bsn","branson bsn sobresellado"]
+};
+
+const SCORE_EXACTA  = 100;
+const SCORE_PARCIAL = 75;
+const SCORE_FUZZY   = 50;
+const TOP_N         = 3;
+const MIN_INPUT     = 2;
+const MAX_HISTORIAL = 10;
+
+const normalizar = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+const INDICE = Object.entries(DATOS).flatMap(([modulo, items]) =>
+  items.map(item => ({
+    ...item,
+    modulo,
+    eqsNorm: (EQS[item.codigo] || []).map(normalizar),
+    causaNorm: normalizar(item.causa),
+    modoNorm: normalizar(item.modo)
+  }))
+);
+
+let historial = [];
+let seleccion = null;
+
+document.getElementById('selModulo').addEventListener('change', onModuloChange);
+document.getElementById('txtDesc').addEventListener('input', onDescChange);
+document.getElementById('btnGuardar').addEventListener('click', guardar);
+
+document.addEventListener('click', e => {
+  const matchItem = e.target.closest('.match-item');
+  if (!matchItem) return;
+  seleccionarCodigo(matchItem.dataset.codigo, parseInt(matchItem.dataset.score));
+});
+
+const getConfidenceLevel = score => score >= 85 ? 'high' : score >= 60 ? 'med' : 'low';
+
+function onModuloChange() {
+  document.getElementById('txtDesc').value = '';
+  document.getElementById('sugerencias').innerHTML = '';
+  clearSelection();
+}
+
+function onDescChange() {
+  const input = normalizar(document.getElementById('txtDesc').value.trim());
+  const modulo = document.getElementById('selModulo').value;
+  if (input.length < MIN_INPUT) {
+    document.getElementById('sugerencias').innerHTML = '';
+    return;
+  }
+  buscar(input, modulo);
+}
+
+function buscar(input, modulo) {
+  const candidatos = modulo ? INDICE.filter(c => c.modulo === modulo) : INDICE;
+  const inputWords = input.split(/\s+/).filter(w => w.length >= MIN_INPUT);
+  const scores = [];
+
+  candidatos.forEach(item => {
+    let score = 0;
+    let matched = 0;
+
+    if (item.eqsNorm.some(eq => eq === input)) {
+      score = SCORE_EXACTA;
+      matched = inputWords.length;
+    } else {
+      matched = inputWords.filter(w =>
+        item.eqsNorm.some(eq => eq.split(' ').some(e => e.includes(w)))
+      ).length;
+      if (matched > 0) {
+        score = SCORE_PARCIAL;
+      } else if (item.causaNorm.includes(input) || item.modoNorm.includes(input)) {
+        score = SCORE_FUZZY;
+      }
+    }
+
+    if (score > 0) scores.push({ ...item, score, matched });
+  });
+
+  scores.sort((a, b) => b.score - a.score || b.matched - a.matched || a.codigo.localeCompare(b.codigo));
+  mostrar(scores.slice(0, TOP_N));
+}
+
+function mostrar(matches) {
+  const container = document.getElementById('sugerencias');
+  if (!matches.length) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;">Sin coincidencias</div>';
+    return;
+  }
+  container.innerHTML = matches.map(entry => {
+    const confidenceLevel = getConfidenceLevel(entry.score);
+    const accionHtml = entry.accion
+      ? `<div class="match-accion">${entry.accion}</div>`
+      : '<div class="match-accion pendiente">accion correctiva: pendiente de definir</div>';
+    return `<div class="match-item" data-codigo="${entry.codigo}" data-score="${entry.score}">
+      <div class="match-code">${entry.codigo}</div>
+      <div class="match-causa">${entry.causa}</div>
+      ${accionHtml}
+      <div class="match-meta">${entry.modulo}</div>
+      <div class="match-conf conf-${confidenceLevel}">${entry.score}% confianza</div>
+    </div>`;
+  }).join('');
+}
+
+function seleccionarCodigo(codigo, score) {
+  const item = INDICE.find(c => c.codigo === codigo);
+  if (!item) return;
+  seleccion = { codigo, causa: item.causa, modulo: item.modulo, score };
+  document.getElementById('btnGuardar').disabled = false;
+  const confidenceLevel = getConfidenceLevel(score);
+  document.getElementById('infoBox').innerHTML =
+    `<div class="info-code">${codigo}</div>
+     <div class="info-desc">${item.causa}</div>
+     <div class="info-desc">${item.modulo}</div>
+     <div class="info-conf conf-${confidenceLevel}">${score}% confianza</div>`;
+}
+
+function clearSelection() {
+  seleccion = null;
+  document.getElementById('btnGuardar').disabled = true;
+  document.getElementById('infoBox').innerHTML =
+    '<div class="info-placeholder info-selected">Selecciona una sugerencia</div>';
+}
+
+function guardar() {
+  if (!seleccion) return;
+  const desc = document.getElementById('txtDesc').value;
+  const now = new Date();
+  const ts = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  historial.unshift({ codigo: seleccion.codigo, desc, score: seleccion.score, modulo: seleccion.modulo, time: ts });
+  if (historial.length > MAX_HISTORIAL) historial = historial.slice(0, MAX_HISTORIAL);
+  actualizarHist();
+  document.getElementById('txtDesc').value = '';
+  document.getElementById('sugerencias').innerHTML = '';
+  clearSelection();
+}
+
+function actualizarHist() {
+  const container = document.getElementById('historial');
+  if (!historial.length) {
+    container.innerHTML = '<div class="info-placeholder" style="padding:1rem;">Sin capturas</div>';
+    return;
+  }
+  container.innerHTML = historial.map(h =>
+    `<div class="hist-item">
+       <div class="hist-code">${h.codigo}</div>
+       <div class="hist-text">"${h.desc}" [${h.modulo}]</div>
+       <div class="hist-meta">${h.time} | ${h.score}% confianza</div>
+     </div>`
+  ).join('');
+}
+</script>
+</body>
+</html>

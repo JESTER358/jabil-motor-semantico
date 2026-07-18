@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motor Semantico - 3M | Jabil Tijuana</title>
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+:root {
+  --navy:    #002C49;
+  --navy-dk: #001a2e;
+  --navy-lt: #003a5c;
+  --blue:    #6098B0;
+  --blue-lt: #7ab1c8;
+  --bg:      #0d1a26;
+  --card:    #132433;
+  --card-hl: #1a2d40;
+  --border:  #1e3a52;
+  --text:    #c8d6e0;
+  --text-muted: #6a8a9a;
+  --font:    'Segoe UI', system-ui, -apple-system, sans-serif;
+  --success: #2ecc71;
+  --warn:    #f39c12;
+  --danger:  #e74c3c;
+}
+html,body{height:100%;}
+body{font-family:var(--font);font-size:14px;color:var(--text);background:var(--bg);display:flex;flex-direction:column;min-height:100vh;}
+.site-header{background:var(--navy);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);position:sticky;top:0;z-index:100;}
+.header-inner{display:flex;align-items:center;gap:16px;padding:10px 28px;max-width:1440px;margin:0 auto;width:100%;border-bottom:2px solid var(--navy-lt);}
+.header-titles{flex:1;}
+.header-titles h1{font-size:18px;font-weight:700;letter-spacing:0.02em;line-height:1.2;color:#fff;}
+.header-titles p{font-size:11px;color:var(--blue-lt);margin-top:2px;text-transform:uppercase;letter-spacing:0.04em;}
+main{display:grid;grid-template-columns:1fr 340px;gap:1.5rem;padding:1.5rem;max-width:1440px;margin:0 auto;width:100%;flex:1;overflow-y:auto;}
+@media(max-width:1024px){main{grid-template-columns:1fr;}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.3rem;box-shadow:0 2px 12px rgba(0,0,0,0.2);}
+.panel-title{font-size:0.75rem;font-weight:600;color:var(--blue);margin-bottom:0.9rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.5px;}
+.form-group{margin-bottom:1.1rem;}
+label{display:block;font-size:0.72rem;font-weight:500;color:var(--text-muted);margin-bottom:0.3rem;text-transform:uppercase;letter-spacing:0.3px;}
+select,input,textarea{width:100%;padding:0.6rem 0.8rem;border:1px solid var(--border);border-radius:5px;background:var(--navy-dk);color:var(--text);font-size:0.9rem;font-family:inherit;transition:border-color 0.15s ease-out,box-shadow 0.15s ease-out,background-color 0.15s ease-out;}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(96,152,176,0.15);}
+select option{background:var(--navy);color:var(--text);}
+button{width:100%;padding:0.65rem 1.2rem;background:linear-gradient(135deg,var(--blue) 0%,var(--navy-lt) 100%);color:#fff;border:none;border-radius:5px;font-weight:600;cursor:pointer;transition:all 0.2s;font-size:0.88rem;}
+button:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(96,152,176,0.25);}
+button:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
+.match-item{background:var(--navy-dk);border:1px solid var(--border);border-radius:5px;padding:0.8rem;margin-bottom:0.5rem;cursor:pointer;transition:background-color 0.15s ease-out,border-color 0.15s ease-out;}
+.match-item:hover{background:var(--card-hl);border-color:var(--blue);}
+.match-item.selected{background:var(--blue);border-color:var(--blue);}
+.match-code{font-weight:600;color:var(--blue);font-family:monospace;font-size:1.05rem;}
+.match-item.selected .match-code{color:#fff;}
+.match-causa{font-size:0.82rem;color:var(--text);margin-top:0.2rem;}
+.match-item.selected .match-causa{color:#fff;}
+.match-accion{font-size:0.76rem;color:var(--text-muted);margin-top:0.15rem;}
+.match-item.selected .match-accion{color:#e0e8f0;}
+.match-meta{font-size:0.7rem;color:var(--text-muted);margin-top:0.25rem;text-transform:uppercase;letter-spacing:0.3px;}
+.match-item.selected .match-meta{color:#e0e8f0;}
+.match-conf{font-size:0.72rem;margin-top:0.15rem;}
+.match-item.selected .match-conf{color:#e0e8f0;}
+.info-box{background:var(--navy-dk);border-radius:5px;padding:1rem;min-height:80px;display:flex;flex-direction:column;justify-content:center;}
+.info-code{font-size:1.4rem;font-weight:600;color:var(--blue);font-family:monospace;}
+.info-desc{color:var(--text-muted);font-size:0.85rem;margin-top:0.3rem;}
+.info-conf{font-size:0.8rem;margin-top:0.3rem;}
+.conf-high{color:var(--success);}
+.conf-med{color:var(--warn);}
+.conf-low{color:var(--danger);}
+.info-placeholder{color:var(--text-muted);font-size:0.85rem;text-align:center;}
+.hist-item{background:var(--navy-dk);border-left:3px solid var(--blue);padding:0.55rem 0.7rem;margin-bottom:0.45rem;border-radius:2px;font-size:0.85rem;}
+.hist-code{font-weight:600;color:var(--blue);font-family:monospace;font-size:0.9rem;}
+.hist-text{color:var(--text-muted);font-size:0.78rem;margin-top:0.1rem;}
+.hist-meta{color:var(--text-muted);font-size:0.68rem;margin-top:0.1rem;opacity:0.7;}
+footer{text-align:center;padding:0.7rem 2rem;font-size:0.7rem;color:var(--text-muted);border-top:1px solid var(--border);opacity:0.7;}
+.header-client{text-align:right;}
+aside.sidebar{display:flex;flex-direction:column;gap:1rem;}
+.panel-section{margin-top:1.5rem;}
+.suggestions-container{min-height:70px;}
+.info-selected{padding:1.5rem;}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-titles">
+      <h1>MOTOR SEMANTICO 3M</h1>
+      <p>Estandarizacion de Codigos de Falla | Jabil Tijuana</p>
+    </div>
+    <div class="header-titles header-client">
+      <p>Cliente</p>
+      <h1 style="font-size:14px;">3M</h1>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="panel">
+    <div class="panel-title">Filtros</div>
+
+    <div class="form-group">
+      <label>Equipo</label>
+      <select id="selEquipo">
+        <option value="">TODOS LOS EQUIPOS</option>
+        <option value="RF Cosmos">RF Cosmos</option>
+        <option value="Selladora de Bolsa">Selladora de Bolsa</option>
+        <option value="Pad Printer">Pad Printer</option>
+        <option value="Uson">Uson</option>
+        <option value="Horno">Horno</option>
+        <option value="Dispensador Medical">Dispensador Medical</option>
+        <option value="UV">UV</option>
+      </select>
+    </div>
+
+    <div class="panel-title panel-section">Descripcion del Error</div>
+
+    <div class="form-group">
+      <label>Describe lo que observaste</label>
+      <input type="text" id="txtDesc" placeholder="Ej: overload, no sella, fuga, rebaba, no calienta">
+    </div>
+
+    <div class="panel-title panel-section">Sugerencias</div>
+    <div id="sugerencias" class="suggestions-container"></div>
+
+    <button class="panel-section" id="btnGuardar" disabled>Guardar</button>
+  </div>
+
+  <aside class="sidebar">
+    <div class="panel">
+      <div class="panel-title">Codigo Seleccionado</div>
+      <div id="infoBox" class="info-placeholder info-selected">Selecciona una sugerencia</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Historial</div>
+      <div id="historial" style="max-height:280px;overflow-y:auto;">
+        <div class="info-placeholder" style="padding:1rem;">Sin capturas</div>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer>Motor Semantico 3M · 28 codigos de falla · 7 equipos · Jabil 2026</footer>
+
+<script>
+const DATOS = {"RF Cosmos": [{"codigo": "G1 Over Load", "causa": "Alarma Over Load", "accion": "", "estacion": "Generador 1"}, {"codigo": "G1 Plate Curre fuera de limite", "causa": "Alarma Plate Curre no llego a su limite", "accion": "", "estacion": "Generador 1"}, {"codigo": "G1 Arco Supresor", "causa": "Alarma Arco Supresor", "accion": "", "estacion": "Generador 1"}, {"codigo": "G1 Corriente de grid baja", "causa": "Alarma corriente de grid baja", "accion": "", "estacion": "Generador 1"}, {"codigo": "G1 Switch de cambio", "causa": "Alarma Switch de cambio de ciclo dañado", "accion": "", "estacion": "Generador 1"}, {"codigo": "ND Sobre sellado", "causa": "Sobre sellado", "accion": "", "estacion": "Nido 1 al 8"}, {"codigo": "ND Sobre debil", "causa": "Sellado debil", "accion": "", "estacion": "Nido 1 al 8"}, {"codigo": "ND Sobre roto", "causa": "Sellado roto", "accion": "", "estacion": "Nido 1 al 8"}, {"codigo": "NDM Mandril dañado", "causa": "Mandril dañado o desalineado", "accion": "", "estacion": "Nido 1 al 8"}, {"codigo": "NDB Buffer dañado", "causa": "Buffer dañado", "accion": "", "estacion": "Nido 1 al 8"}, {"codigo": "G2 Over Load", "causa": "Alarma Over Load", "accion": "", "estacion": "Generador 2"}, {"codigo": "G2 Plate Curre fuera de limite", "causa": "Alarma Plate Curre no llego a su limite", "accion": "", "estacion": "Generador 2"}, {"codigo": "G2 Arco Supresor", "causa": "Alarma Arco Supresor", "accion": "", "estacion": "Generador 2"}, {"codigo": "G2 Corriente de grid baja", "causa": "Alarma corriente de grid baja", "accion": "", "estacion": "Generador 2"}, {"codigo": "DC Rebaba dura", "causa": "Rebaba dura", "accion": "", "estacion": "Dado de corte"}], "Selladora de Bolsa": [{"codigo": "SB Sobre sellado", "causa": "Sobre sellado", "accion": "", "estacion": "Selladora"}, {"codigo": "SB Sobre debil", "causa": "Sellado debil", "accion": "", "estacion": "Selladora"}], "Pad Printer": [{"codigo": "PP Ilegible", "causa": "Impresion ilegible", "accion": "", "estacion": "Estampado"}, {"codigo": "PP Pedal danado", "causa": "Pedal no da senal de star", "accion": "", "estacion": "Estampado"}], "Uson": [{"codigo": "PF Fuga", "causa": "exceso de fuga", "accion": "", "estacion": "Prueba de Fuga"}, {"codigo": "PF Conector danado", "causa": "Conector denado", "accion": "", "estacion": "Prueba de Fuga"}], "Horno": [{"codigo": "HC resistencia danada", "causa": "Resistencia danada", "accion": "", "estacion": "Curado"}, {"codigo": "HC Thermocople danado", "causa": "Thermocople danado", "accion": "", "estacion": "Curado"}], "Dispensador Medical": [{"codigo": "DM Falta de solvente", "causa": "Falta de solvente", "accion": "", "estacion": "Dispensado"}, {"codigo": "DM exceso de solvente", "causa": "exceso de solbente", "accion": "", "estacion": "Dispensado"}], "UV": [{"codigo": "UV curado debil", "causa": "curado debil", "accion": "", "estacion": "Curado UV"}, {"codigo": "UV potencia baja", "causa": "potencia fuera de rango", "accion": "", "estacion": "Curado UV"}, {"codigo": "UV Fibra danada", "causa": "Fibra danada", "accion": "", "estacion": "Curado UV"}]};
+
+const EQS = {"G1 Over Load": ["overload g1", "g1 sobrecarga", "alarma g1 overload", "g1 se disparo", "sobrecarga generador 1", "g1 overload alarma", "falla g1 overload"], "G1 Plate Curre fuera de limite": ["plate curre g1 fuera", "g1 plate curre no llego", "no llego corriente g1", "g1 limite corriente", "falla plate curre", "g1 no alcanza corriente", "corriente fuera de rango g1"], "G1 Arco Supresor": ["arco supresor g1", "g1 arco", "alarma arco g1", "arco electrico g1", "falla arco supresor", "g1 detector arco"], "G1 Corriente de grid baja": ["grid baja g1", "corriente grid baja", "g1 grid bajo", "baja corriente grid", "g1 no llega corriente", "grid baja alarma g1"], "G1 Switch de cambio": ["switch g1 danado", "switch cambio g1", "g1 switch falla", "micro switch g1", "interruptor g1 danado", "g1 no detecta switch", "cambio de ciclo g1"], "ND Sobre sellado": ["sobre sellado nido", "nido sobre sella", "sella demas nido", "nido sobrecalienta", "sobre sello nido", "nido calor excesivo"], "ND Sobre debil": ["sellado debil nido", "nido sella debil", "nido no sella bien", "sello debil nido", "nido sello flojo", "falla nido sellado"], "ND Sobre roto": ["sello roto nido", "nido sello roto", "selladura rota nido", "nido sello danado", "nido se rompio sello", "sello nido defectuoso"], "NDM Mandril danado": ["mandril danado nido", "nido mandril roto", "mandril nido falla", "mandril desalineado nido", "nido mandril golpeado", "mandril nido no funciona"], "NDB Buffer danado": ["buffer danado nido", "nido buffer falla", "buffer nido roto", "amortiguador nido danado", "buffer nido no sirve", "falla buffer nido"], "G2 Over Load": ["overload g2", "g2 sobrecarga", "alarma g2 overload", "g2 se disparo", "sobrecarga generador 2", "g2 overload alarma", "falla g2 overload"], "G2 Plate Curre fuera de limite": ["plate curre g2 fuera", "g2 plate curre no llego", "no llego corriente g2", "g2 limite corriente", "falla plate curre g2", "g2 no alcanza corriente"], "G2 Arco Supresor": ["arco supresor g2", "g2 arco", "alarma arco g2", "arco electrico g2", "falla arco supresor g2", "g2 detector arco"], "G2 Corriente de grid baja": ["grid baja g2", "corriente grid baja g2", "g2 grid bajo", "baja corriente grid g2", "g2 no llega corriente"], "DC Rebaba dura": ["rebaba dura corte", "dado de corte rebaba", "rebaba excesiva", "corte con rebaba", "dado rebaba", "falla rebaba dura", "corte no limpio", "dado de corte sucio"], "SB Sobre sellado": ["sobre sellado bolsa", "selladora sobre sella", "bolsa sella demas", "selladora calor exceso", "sello bolsa quemado", "sobre calienta selladora", "bolsa sobre sellada"], "SB Sobre debil": ["sellado debil bolsa", "bolsa sella debil", "selladora debil", "bolsa no sella bien", "sello bolsa flojo", "bolsa se abre"], "PP Ilegible": ["ilegible impresion", "pad printer no imprime bien", "mala impresion pad", "letras borrosas pad", "no se lee impresion", "impresion borrosa", "pad printer ilegible", "falla impresion pad"], "PP Pedal danado": ["pedal danado pad", "pad printer pedal no funciona", "pedal no da senal", "pedal pad falla", "no arranca pad printer", "pedal no sirve", "senal pedal pad"], "PF Fuga": ["fuga prueba fuga", "uson fuga", "exceso fuga uson", "no pasa prueba fuga", "fuga alta uson", "falla fuga uson", "prueba falla fuga"], "PF Conector danado": ["conector danado uson", "conector fuga danado", "uson conector roto", "pin conector uson danado", "conector prueba roto", "uson no conecta"], "HC resistencia danada": ["resistencia danada horno", "horno no calienta", "resistencia horno rota", "horno frio", "no calienta horno curado", "falla resistencia horno", "horno sin calor"], "HC Thermocople danado": ["thermocople horno danado", "termopar horno falla", "horno no lee temperatura", "thermocouple horno roto", "sensor temperatura horno danado", "horno temperatura mala"], "DM Falta de solvente": ["falta solvente dispensador", "sin solvente medical", "dispensador no tiene solvente", "solvente vacio", "falta thinner dispensador", "sin quimico dispensador"], "DM exceso de solvente": ["exceso solvente dispensador", "mucho solvente medical", "sobra solvente", "demasiado solvente", "dispensador tira mucho", "solvente excesivo"], "UV curado debil": ["curado debil uv", "uv no cura bien", "luz uv debil", "curado incompleto uv", "uv no seca", "falla curado uv", "uv curado lento"], "UV potencia baja": ["potencia uv baja", "uv fuera de rango", "uv poca potencia", "luz uv debil potencia", "uv rango bajo", "potencia curado uv baja"], "UV Fibra danada": ["fibra uv danada", "fibra optica uv rota", "uv fibra rota", "cable fibra uv danado", "guia luz uv danada", "uv no transmite"]};
+
+const SCORE_EXACTA  = 100;
+const SCORE_PARCIAL = 75;
+const SCORE_FUZZY   = 50;
+const TOP_N         = 3;
+const MIN_INPUT     = 2;
+const MAX_HISTORIAL = 10;
+
+const normalizar = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+const INDICE = Object.entries(DATOS).flatMap(([equipo, items]) =>
+  items.map(item => ({
+    ...item,
+    equipo,
+    eqsNorm: (EQS[item.codigo] || []).map(normalizar),
+    causaNorm: normalizar(item.causa)
+  }))
+);
+
+let historial = [];
+let seleccion = null;
+
+document.getElementById('selEquipo').addEventListener('change', onEquipoChange);
+document.getElementById('txtDesc').addEventListener('input', onDescChange);
+document.getElementById('btnGuardar').addEventListener('click', guardar);
+
+document.addEventListener('click', e => {
+  const matchItem = e.target.closest('.match-item');
+  if (!matchItem) return;
+  seleccionarCodigo(matchItem.dataset.codigo, parseInt(matchItem.dataset.score));
+});
+
+const getConfidenceLevel = score => score >= 85 ? 'high' : score >= 60 ? 'med' : 'low';
+
+function onEquipoChange() {
+  document.getElementById('txtDesc').value = '';
+  document.getElementById('sugerencias').innerHTML = '';
+  clearSelection();
+}
+
+function onDescChange() {
+  const input = normalizar(document.getElementById('txtDesc').value.trim());
+  const equipo = document.getElementById('selEquipo').value;
+  if (input.length < MIN_INPUT) {
+    document.getElementById('sugerencias').innerHTML = '';
+    return;
+  }
+  buscar(input, equipo);
+}
+
+function buscar(input, equipo) {
+  const candidatos = equipo ? INDICE.filter(c => c.equipo === equipo) : INDICE;
+  const inputWords = input.split(/\s+/).filter(w => w.length >= MIN_INPUT);
+  const scores = [];
+
+  candidatos.forEach(item => {
+    let score = 0;
+    let matched = 0;
+
+    if (item.eqsNorm.some(eq => eq === input)) {
+      score = SCORE_EXACTA;
+      matched = inputWords.length;
+    } else {
+      matched = inputWords.filter(w =>
+        item.eqsNorm.some(eq => eq.split(' ').some(e => e.includes(w)))
+      ).length;
+      if (matched > 0) {
+        score = SCORE_PARCIAL;
+      } else if (item.causaNorm.includes(input)) {
+        score = SCORE_FUZZY;
+      }
+    }
+
+    if (score > 0) scores.push({ ...item, score, matched });
+  });
+
+  scores.sort((a, b) => b.score - a.score || b.matched - a.matched || a.codigo.localeCompare(b.codigo));
+  mostrar(scores.slice(0, TOP_N));
+}
+
+function mostrar(matches) {
+  const container = document.getElementById('sugerencias');
+  if (!matches.length) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;">Sin coincidencias</div>';
+    return;
+  }
+  container.innerHTML = matches.map(entry => {
+    const confidenceLevel = getConfidenceLevel(entry.score);
+    const accionHtml = entry.accion
+      ? '<div class="match-accion">' + entry.accion + '</div>'
+      : '<div class="match-accion pendiente">accion correctiva: pendiente de definir</div>';
+    const estacionInfo = entry.estacion ? ' | ' + entry.estacion : '';
+    return '<div class="match-item" data-codigo="' + entry.codigo + '" data-score="' + entry.score + '">'
+      + '<div class="match-code">' + entry.codigo + '</div>'
+      + '<div class="match-causa">' + entry.causa + '</div>'
+      + accionHtml
+      + '<div class="match-meta">' + entry.equipo + estacionInfo + '</div>'
+      + '<div class="match-conf conf-' + confidenceLevel + '">' + entry.score + '% confianza</div>'
+      + '</div>';
+  }).join('');
+}
+
+function seleccionarCodigo(codigo, score) {
+  const item = INDICE.find(c => c.codigo === codigo);
+  if (!item) return;
+  seleccion = { codigo, causa: item.causa, equipo: item.equipo, score };
+  document.getElementById('btnGuardar').disabled = false;
+  const confidenceLevel = getConfidenceLevel(score);
+  document.getElementById('infoBox').innerHTML =
+    '<div class="info-code">' + codigo + '</div>'
+    + '<div class="info-desc">' + item.causa + '</div>'
+    + '<div class="info-desc">' + item.equipo + (item.estacion ? ' | ' + item.estacion : '') + '</div>'
+    + '<div class="info-conf conf-' + confidenceLevel + '">' + score + '% confianza</div>';
+}
+
+function clearSelection() {
+  seleccion = null;
+  document.getElementById('btnGuardar').disabled = true;
+  document.getElementById('infoBox').innerHTML =
+    '<div class="info-placeholder info-selected">Selecciona una sugerencia</div>';
+}
+
+function guardar() {
+  if (!seleccion) return;
+  const desc = document.getElementById('txtDesc').value;
+  const now = new Date();
+  const ts = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  historial.unshift({ codigo: seleccion.codigo, desc, score: seleccion.score, equipo: seleccion.equipo, time: ts });
+  if (historial.length > MAX_HISTORIAL) historial = historial.slice(0, MAX_HISTORIAL);
+  actualizarHist();
+  document.getElementById('txtDesc').value = '';
+  document.getElementById('sugerencias').innerHTML = '';
+  clearSelection();
+}
+
+function actualizarHist() {
+  const container = document.getElementById('historial');
+  if (!historial.length) {
+    container.innerHTML = '<div class="info-placeholder" style="padding:1rem;">Sin capturas</div>';
+    return;
+  }
+  container.innerHTML = historial.map(h =>
+    '<div class="hist-item">'
+    + '<div class="hist-code">' + h.codigo + '</div>'
+    + '<div class="hist-text">"' + h.desc + '" [' + h.equipo + ']</div>'
+    + '<div class="hist-meta">' + h.time + ' | ' + h.score + '% confianza</div>'
+    + '</div>'
+  ).join('');
+}
+</script>
+</body>
+</html>
